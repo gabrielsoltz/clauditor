@@ -13,17 +13,17 @@ class Severity(str, Enum):
 
 
 class Scope(str, Enum):
-    USER = "user"            # ~/.claude/settings.json (you, across all projects)
-    PROJECT = "project"      # .claude/settings.json (all collaborators, committed to git)
-    LOCAL = "local"          # .claude/settings.local.json (you, this repo only, gitignored)
-    MANAGED = "managed"      # Server-managed settings deployed by IT (highest precedence)
+    USER = "user"  # ~/.claude/settings.json (you, across all projects)
+    PROJECT = "project"  # .claude/settings.json (all collaborators, committed to git)
+    LOCAL = "local"  # .claude/settings.local.json (you, this repo only, gitignored)
+    MANAGED = "managed"  # Server-managed settings deployed by IT (highest precedence)
     REPOSITORY = "repository"  # Repo-level files (CODEOWNERS, etc.) — Clauditor extension
 
 
 class CheckType(str, Enum):
-    CONFIG_VALUE = "config_value"   # Check a key/value in a JSON settings file
-    FILE_CONTENT = "file_content"   # Check content inside a file
-    FILE_EXISTS = "file_exists"     # Check that a file exists
+    CONFIG_VALUE = "config_value"  # Check a key/value in a JSON settings file
+    FILE_CONTENT = "file_content"  # Check content inside a file
+    FILE_EXISTS = "file_exists"  # Check that a file exists
 
 
 class Check(BaseModel):
@@ -42,7 +42,7 @@ class Check(BaseModel):
 
     @field_validator("scope", mode="before")
     @classmethod
-    def normalize_scope(cls, v: Any) -> Any:
+    def normalize_scope(_cls: Any, v: Any) -> Any:
         if isinstance(v, list):
             return [s.lower() if isinstance(s, str) else s for s in v]
         return v

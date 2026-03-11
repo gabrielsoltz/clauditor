@@ -4,15 +4,15 @@ from pathlib import Path
 
 from clauditor.checkers import CHECKER_REGISTRY
 from clauditor.loader import load_checks
-from clauditor.models.check import Check, Scope
+from clauditor.models.check import Scope
 from clauditor.models.finding import Finding
 from clauditor.providers import (
     BaseProvider,
-    UserProvider,
     LocalProvider,
     ManagedProvider,
     ProjectProvider,
     RepositoryProvider,
+    UserProvider,
     clone_repository,
 )
 
@@ -104,6 +104,7 @@ def run_scan(
                     findings.append(finding)
                 except Exception as exc:
                     from clauditor.models.finding import FindingStatus
+
                     findings.append(
                         Finding(
                             check_id=check.id,

@@ -8,6 +8,8 @@ check_config schema:
   expected_value: any       # Expected value (string, bool, int, etc.)
 """
 
+from typing import Any
+
 from clauditor.models.check import Check
 from clauditor.models.finding import Finding, FindingStatus
 from clauditor.providers.base import BaseProvider
@@ -15,10 +17,10 @@ from clauditor.providers.base import BaseProvider
 from .base import BaseChecker
 
 
-def _get_nested(data: dict, key: str):  # type: ignore[return]
+def _get_nested(data: dict[str, Any], key: str) -> tuple[Any, bool]:
     """Resolve a dot-notation key like 'permissions.allow' from a nested dict."""
     parts = key.split(".")
-    current = data
+    current: Any = data
     for part in parts:
         if not isinstance(current, dict) or part not in current:
             return None, False

@@ -38,6 +38,7 @@ def load_checks(directory: Path | None = None) -> list[Check]:
 
     if errors:
         import warnings
+
         for err in errors:
             warnings.warn(err, stacklevel=2)
 

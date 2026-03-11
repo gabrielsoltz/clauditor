@@ -3,6 +3,7 @@
 import subprocess
 import tempfile
 from pathlib import Path
+from typing import Any
 
 from clauditor.models.check import Scope
 
@@ -17,7 +18,7 @@ class RepositoryProvider(BaseProvider):
     def __init__(self, repo_root: Path) -> None:
         self._repo_root = repo_root
 
-    def get_settings(self) -> dict:
+    def get_settings(self) -> dict[str, Any]:
         # Repository checks work on files, not settings dicts
         return {}
 
@@ -37,7 +38,7 @@ class RepositoryProvider(BaseProvider):
         return self._repo_root.exists() and self._repo_root.is_dir()
 
 
-def clone_repository(url: str) -> tuple[Path, tempfile.TemporaryDirectory]:  # type: ignore[type-arg]
+def clone_repository(url: str) -> tuple[Path, tempfile.TemporaryDirectory[str]]:
     """
     Clone a remote repository to a temporary directory.
     Returns (repo_root, temp_dir). Caller must clean up temp_dir.

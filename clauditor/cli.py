@@ -1,8 +1,7 @@
 """Clauditor CLI entry point."""
 
-import sys
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 
@@ -25,10 +24,16 @@ def _version_callback(value: bool) -> None:
 
 
 @app.callback()
-def main(
-    version: Annotated[
-        Optional[bool],
-        typer.Option("--version", "-V", callback=_version_callback, is_eager=True, help="Show version and exit."),
+def callback(
+    _version: Annotated[
+        bool | None,
+        typer.Option(
+            "--version",
+            "-V",
+            callback=_version_callback,
+            is_eager=True,
+            help="Show version and exit.",
+        ),
     ] = None,
 ) -> None:
     pass
@@ -37,12 +42,19 @@ def main(
 @app.command()
 def scan(
     path: Annotated[
-        Optional[Path],
-        typer.Option("--path", "-p", help="Path to a local repository to scan.", show_default=False),
+        Path | None,
+        typer.Option(
+            "--path", "-p", help="Path to a local repository to scan.", show_default=False
+        ),
     ] = None,
     url: Annotated[
-        Optional[str],
-        typer.Option("--url", "-u", help="URL of a remote git repository to clone and scan.", show_default=False),
+        str | None,
+        typer.Option(
+            "--url",
+            "-u",
+            help="URL of a remote git repository to clone and scan.",
+            show_default=False,
+        ),
     ] = None,
     user_only: Annotated[
         bool,
@@ -53,15 +65,19 @@ def scan(
         typer.Option("--no-user", help="Skip user scope scan."),
     ] = False,
     checks_dir: Annotated[
-        Optional[Path],
-        typer.Option("--checks-dir", help="Directory with custom YAML check definitions.", show_default=False),
+        Path | None,
+        typer.Option(
+            "--checks-dir", help="Directory with custom YAML check definitions.", show_default=False
+        ),
     ] = None,
     severity: Annotated[
-        Optional[str],
-        typer.Option("--severity", "-s", help="Comma-separated severity filter, e.g. CRITICAL,HIGH"),
+        str | None,
+        typer.Option(
+            "--severity", "-s", help="Comma-separated severity filter, e.g. CRITICAL,HIGH"
+        ),
     ] = None,
     scope: Annotated[
-        Optional[str],
+        str | None,
         typer.Option("--scope", help="Comma-separated scope filter, e.g. user,project,repository"),
     ] = None,
     verbose: Annotated[
@@ -128,6 +144,7 @@ def scan(
 
     if exit_code:
         from clauditor.models.finding import FindingStatus
+
         has_failures = any(f.status == FindingStatus.FAIL for f in findings)
         if has_failures:
             raise typer.Exit(1)
@@ -136,15 +153,16 @@ def scan(
 @app.command()
 def list_checks(
     checks_dir: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option("--checks-dir", help="Custom checks directory.", show_default=False),
     ] = None,
 ) -> None:
     """List all available checks."""
-    from clauditor.loader import load_checks
+    from rich import box
     from rich.console import Console
     from rich.table import Table
-    from rich import box
+
+    from clauditor.loader import load_checks
 
     checks = load_checks(checks_dir)
     console = Console()

@@ -9,6 +9,8 @@ check_config schema:
       owner: str                # e.g. "@security-team"
 """
 
+from typing import Any
+
 from clauditor.models.check import Check
 from clauditor.models.finding import Finding, FindingStatus
 from clauditor.providers.base import BaseProvider
@@ -42,7 +44,7 @@ class FileContentChecker(BaseChecker):
     def run(self, check: Check, provider: BaseProvider) -> Finding:
         cfg = check.check_config
         search_paths: list[str] = cfg.get("search_paths", [cfg.get("file", "")])
-        required_entries: list[dict] = cfg.get("required_entries", [])
+        required_entries: list[dict[str, Any]] = cfg.get("required_entries", [])
 
         # Find the first existing file among candidate paths
         found_path: str | None = None
@@ -54,7 +56,11 @@ class FileContentChecker(BaseChecker):
                 break
 
         root = provider.get_root()
-        target = str(root / found_path) if (root and found_path) else (found_path or search_paths[0] if search_paths else "unknown")
+        target = (
+            str(root / found_path)
+            if (root and found_path)
+            else (found_path or search_paths[0] if search_paths else "unknown")
+        )
 
         if content is None:
             return Finding(

@@ -6,7 +6,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from clauditor.aggregator import COVERED, NA, CheckResult, aggregate
+from clauditor.aggregator import COVERED, NA, aggregate
 from clauditor.models.check import Scope, Severity
 from clauditor.models.finding import Finding, FindingStatus
 
@@ -82,10 +82,7 @@ def print_findings(findings: list[Finding], verbose: bool = False) -> None:
     results = aggregate(findings)
 
     # Determine which scope columns are actually used across all checks
-    active_scopes = [
-        s for s in _SCOPE_COLUMN_ORDER
-        if any(s in r.scope_findings for r in results)
-    ]
+    active_scopes = [s for s in _SCOPE_COLUMN_ORDER if any(s in r.scope_findings for r in results)]
 
     table = Table(
         box=box.ROUNDED,
@@ -124,7 +121,10 @@ def print_findings(findings: list[Finding], verbose: bool = False) -> None:
     console.print(table)
 
     if active_scopes:
-        scope_names = "  ".join(f"[dim]{_SCOPE_LABELS[s][:4]}[/dim]=[dim]{_SCOPE_LABELS[s]}[/dim]" for s in active_scopes)
+        scope_names = "  ".join(
+            f"[dim]{_SCOPE_LABELS[s][:4]}[/dim]=[dim]{_SCOPE_LABELS[s]}[/dim]"
+            for s in active_scopes
+        )
         console.print(
             f"[dim]Scope columns: {scope_names}[/dim]  "
             "[bold green]✔[/bold green][dim]=pass[/dim]  "
