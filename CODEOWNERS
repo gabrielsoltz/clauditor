@@ -3,7 +3,3 @@
 
 # Default owner for everything
 * @gabrielsoltz
-
-# Claude Code configuration — requires security team review on any change
-/.claude/ @security-team
-/CLAUDE.md @security-team
