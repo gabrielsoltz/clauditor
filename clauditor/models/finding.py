@@ -1,11 +1,11 @@
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 from .check import Scope, Severity
 
 
-class FindingStatus(str, Enum):
+class FindingStatus(StrEnum):
     PASS = "PASS"
     FAIL = "FAIL"
     ERROR = "ERROR"

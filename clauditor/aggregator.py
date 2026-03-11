@@ -20,7 +20,6 @@ from dataclasses import dataclass, field
 from clauditor.models.check import Scope, Severity
 from clauditor.models.finding import Finding, FindingStatus
 
-
 # Ordered from highest to lowest precedence (repository excluded — standalone)
 CONFIG_SCOPE_PRECEDENCE: list[Scope] = [
     Scope.MANAGED,
@@ -32,6 +31,7 @@ CONFIG_SCOPE_PRECEDENCE: list[Scope] = [
 
 class DisplayStatus(str):
     """Extended status for display — adds COVERED and NA on top of FindingStatus values."""
+
     pass
 
 

@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any
 
 from clauditor.models.check import Scope
 
@@ -12,7 +13,7 @@ class BaseProvider(ABC):
     scope: Scope
 
     @abstractmethod
-    def get_settings(self) -> dict:
+    def get_settings(self) -> dict[str, Any]:
         """Return the parsed settings dict for this scope, or {} if not found."""
         ...
 

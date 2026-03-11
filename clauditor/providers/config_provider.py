@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from typing import Any, cast
 
 from clauditor.models.check import Scope
 
@@ -16,11 +17,11 @@ class UserProvider(BaseProvider):
     def __init__(self) -> None:
         self._path = Path.home() / ".claude" / "settings.json"
 
-    def get_settings(self) -> dict:
+    def get_settings(self) -> dict[str, Any]:
         if not self._path.exists():
             return {}
         try:
-            return json.loads(self._path.read_text())
+            return cast(dict[str, Any], json.loads(self._path.read_text()))
         except (json.JSONDecodeError, OSError):
             return {}
 
@@ -46,11 +47,11 @@ class ProjectProvider(BaseProvider):
         self._repo_root = repo_root
         self._path = repo_root / ".claude" / "settings.json"
 
-    def get_settings(self) -> dict:
+    def get_settings(self) -> dict[str, Any]:
         if not self._path.exists():
             return {}
         try:
-            return json.loads(self._path.read_text())
+            return cast(dict[str, Any], json.loads(self._path.read_text()))
         except (json.JSONDecodeError, OSError):
             return {}
 
@@ -76,11 +77,11 @@ class LocalProvider(BaseProvider):
         self._repo_root = repo_root
         self._path = repo_root / ".claude" / "settings.local.json"
 
-    def get_settings(self) -> dict:
+    def get_settings(self) -> dict[str, Any]:
         if not self._path.exists():
             return {}
         try:
-            return json.loads(self._path.read_text())
+            return cast(dict[str, Any], json.loads(self._path.read_text()))
         except (json.JSONDecodeError, OSError):
             return {}
 
@@ -112,15 +113,13 @@ class ManagedProvider(BaseProvider):
     ]
 
     def __init__(self) -> None:
-        self._path: Path | None = next(
-            (p for p in self.MANAGED_PATHS if p.exists()), None
-        )
+        self._path: Path | None = next((p for p in self.MANAGED_PATHS if p.exists()), None)
 
-    def get_settings(self) -> dict:
+    def get_settings(self) -> dict[str, Any]:
         if self._path is None:
             return {}
         try:
-            return json.loads(self._path.read_text())
+            return cast(dict[str, Any], json.loads(self._path.read_text()))
         except (json.JSONDecodeError, OSError):
             return {}
 

@@ -28,13 +28,15 @@ class FileExistsChecker(BaseChecker):
         if any_of:
             status = FindingStatus.PASS if present else FindingStatus.FAIL
             message = (
-                f"Found: {', '.join(present)}" if present
+                f"Found: {', '.join(present)}"
+                if present
                 else f"None of the expected files found: {', '.join(paths)}"
             )
         else:
             status = FindingStatus.PASS if not missing else FindingStatus.FAIL
             message = (
-                f"All required files found: {', '.join(paths)}" if not missing
+                f"All required files found: {', '.join(paths)}"
+                if not missing
                 else f"Missing required files: {', '.join(missing)}"
             )
 
