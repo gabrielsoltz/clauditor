@@ -1,0 +1,58 @@
+id: CC002
+name: Disable Bypass Permissions Mode
+description: >
+  Ensures that the disableBypassPermissionsMode setting is explicitly set to
+  "disable" across applicable Claude Code configuration scopes (user, project,
+  managed). This prevents users from launching Claude Code with the
+  --dangerously-skip-permissions flag, which bypasses all permission controls.
+
+scope:
+  - user
+  - project
+  - managed
+
+severity: CRITICAL
+
+threat: >
+  When bypass permissions mode is not locked down, any user can run Claude Code
+  with --dangerously-skip-permissions, which disables all tool permission prompts
+  and approval gates. An attacker or careless developer can exploit this to allow
+  Claude to execute arbitrary shell commands, read/write any file, make network
+  requests, and perform other destructive actions without any human approval step.
+  In CI/CD pipelines or shared environments, this can lead to complete
+  compromise of the system, secret exfiltration, or supply chain attacks.
+
+category: permissions
+
+check_type: config_value
+
+check_config:
+  key: disableBypassPermissionsMode
+  expected_value: "disable"
+
+remediation: >
+  Set disableBypassPermissionsMode to "disable" in the appropriate
+  Claude Code settings file:
+
+  For user scope enforcement (~/.claude/settings.json):
+    {
+      "disableBypassPermissionsMode": "disable"
+    }
+
+  For project-level enforcement (.claude/settings.json):
+    {
+      "disableBypassPermissionsMode": "disable"
+    }
+
+  For enterprise-wide enforcement, deploy via managed settings:
+    {
+      "disableBypassPermissionsMode": "disable"
+    }
+
+  The managed scope takes the highest precedence and cannot be overridden
+  by users, making it the most effective enforcement point.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings

@@ -1,0 +1,57 @@
+id: CC001
+name: CODEOWNERS Enforcement for Claude Code Paths
+description: >
+  Ensures that the /.claude/ directory and /CLAUDE.md file have CODEOWNERS
+  entries assigning a security team as required reviewers. This guarantees
+  that any changes to Claude Code configurations or instructions must be
+  reviewed and approved by the security team before merging.
+
+scope:
+  - repository
+
+severity: HIGH
+
+threat: >
+  Without CODEOWNERS enforcement on Claude Code paths, any repository
+  contributor with write access can silently modify Claude Code settings,
+  hooks, permissions, and CLAUDE.md instructions. This creates a supply
+  chain attack vector: an attacker (or malicious insider) could add
+  dangerous hooks, escalate tool permissions, or inject malicious instructions
+  into CLAUDE.md without security oversight. This can lead to unauthorized
+  code execution, data exfiltration, or privilege escalation during
+  AI-assisted development sessions.
+
+category: access_control
+
+check_type: file_content
+
+check_config:
+  # CODEOWNERS can live in any of these locations (GitHub/GitLab/Bitbucket)
+  search_paths:
+    - CODEOWNERS
+    - .github/CODEOWNERS
+    - .gitlab/CODEOWNERS
+    - docs/CODEOWNERS
+  required_entries:
+    - pattern: "/.claude/"
+      owner: "@security-team"
+    - pattern: "/CLAUDE.md"
+      owner: "@security-team"
+
+remediation: >
+  Add the following entries to your CODEOWNERS file
+  (CODEOWNERS, .github/CODEOWNERS, .gitlab/CODEOWNERS, or docs/CODEOWNERS):
+
+    /.claude/ @security-team
+    /CLAUDE.md @security-team
+
+  Replace @security-team with your organization's actual security team
+  GitHub/GitLab handle. This will require security team approval on any
+  pull request that modifies Claude Code configuration files.
+
+fix_available: true
+
+references:
+  - https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+  - https://docs.gitlab.com/ee/user/project/codeowners/
+  - https://code.claude.com/docs/en/settings
