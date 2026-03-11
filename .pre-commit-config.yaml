@@ -1,0 +1,57 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-yaml
+        args: ["--unsafe"]
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: no-commit-to-branch
+        args: ["--branch", "main"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/sirosen/check-jsonschema
+    rev: 0.37.0
+    hooks:
+      - id: check-github-actions
+      - id: check-github-workflows
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        description: "Static type checking"
+        entry: mypy clauditor/
+        language: system
+        files: '.*\.py'
+        pass_filenames: false
+
+      - id: bandit
+        name: bandit
+        description: "Find common security issues in Python code"
+        entry: bandit -q -lll -r clauditor/
+        language: system
+        files: '.*\.py'
+        pass_filenames: false
+
+      - id: pip-audit
+        name: pip-audit
+        description: "Check dependencies for known security vulnerabilities"
+        entry: pip-audit
+        language: system
+        pass_filenames: false
+
+      - id: vulture
+        name: vulture
+        description: "Find unused code"
+        entry: vulture --min-confidence 100 clauditor/
+        language: system
+        files: '.*\.py'
+        pass_filenames: false

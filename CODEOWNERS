@@ -1,0 +1,9 @@
+# CODEOWNERS
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+* @gabrielsoltz
+
+# Claude Code configuration — requires security team review on any change
+/.claude/ @security-team
+/CLAUDE.md @security-team
