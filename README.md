@@ -2,7 +2,7 @@
 
 **Security configuration scanner for Claude Code.**
 
-Clauditor audits your Claude Code settings and repository configuration to detect security misconfigurations. 
+Clauditor audits your Claude Code settings and repository configuration to detect security misconfigurations.
 
 ---
 
@@ -29,6 +29,8 @@ Or from source:
 ```bash
 git clone https://github.com/gabrielsoltz/clauditor
 cd clauditor
+python3.11 -m venv .venv
+source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
