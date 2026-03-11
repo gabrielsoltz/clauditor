@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
 
-class Severity(str, Enum):
+class Severity(StrEnum):
     CRITICAL = "CRITICAL"
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
@@ -12,7 +12,7 @@ class Severity(str, Enum):
     INFO = "INFO"
 
 
-class Scope(str, Enum):
+class Scope(StrEnum):
     USER = "user"  # ~/.claude/settings.json (you, across all projects)
     PROJECT = "project"  # .claude/settings.json (all collaborators, committed to git)
     LOCAL = "local"  # .claude/settings.local.json (you, this repo only, gitignored)
@@ -20,7 +20,7 @@ class Scope(str, Enum):
     REPOSITORY = "repository"  # Repo-level files (CODEOWNERS, etc.) — Clauditor extension
 
 
-class CheckType(str, Enum):
+class CheckType(StrEnum):
     CONFIG_VALUE = "config_value"  # Check a key/value in a JSON settings file
     FILE_CONTENT = "file_content"  # Check content inside a file
     FILE_EXISTS = "file_exists"  # Check that a file exists
