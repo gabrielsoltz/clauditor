@@ -9,8 +9,37 @@ permissions:
   id-token: write
 
 jobs:
+  version-check:
+    name: Verify version consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Check versions match release tag
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          TOML_VERSION=$(grep '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          INIT_VERSION=$(grep '__version__' clauditor/__init__.py | sed 's/__version__ = "\(.*\)"/\1/')
+
+          echo "Release tag : $TAG"
+          echo "pyproject.toml : $TOML_VERSION"
+          echo "clauditor/__init__.py : $INIT_VERSION"
+
+          if [ "$TOML_VERSION" != "$INIT_VERSION" ]; then
+            echo "ERROR: pyproject.toml ($TOML_VERSION) and __init__.py ($INIT_VERSION) versions do not match."
+            exit 1
+          fi
+
+          if [ "$TAG" != "$TOML_VERSION" ]; then
+            echo "ERROR: Release tag ($TAG) does not match package version ($TOML_VERSION)."
+            exit 1
+          fi
+
+          echo "OK: All versions are consistent ($TAG)."
+
   test:
     name: Run tests before publish
+    needs: version-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
