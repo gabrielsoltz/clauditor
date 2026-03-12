@@ -1,0 +1,5 @@
+# CODEOWNERS — has the patterns but with wrong owner
+* @org/team
+
+/.claude/ @other-team
+/CLAUDE.md @other-team

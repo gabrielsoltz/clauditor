@@ -1,0 +1,31 @@
+id: CC902
+name: Test File Content Check
+description: Test check for file_content checker unit tests.
+
+scope:
+  - repository
+
+severity: HIGH
+
+threat: Test threat for file content checks.
+
+category: test
+
+check_type: file_content
+
+check_config:
+  search_paths:
+    - CODEOWNERS
+    - .github/CODEOWNERS
+  required_entries:
+    - pattern: "/.claude/"
+      owner: "@security-team"
+    - pattern: "/CLAUDE.md"
+      owner: "@security-team"
+
+remediation: Add required CODEOWNERS entries.
+
+fix_available: true
+
+references:
+  - https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners

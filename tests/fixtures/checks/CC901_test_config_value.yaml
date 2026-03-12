@@ -1,0 +1,26 @@
+id: CC901
+name: Test Config Value Check
+description: Test check for config_value checker unit tests.
+
+scope:
+  - project
+  - user
+
+severity: HIGH
+
+threat: Test threat for config value checks.
+
+category: test
+
+check_type: config_value
+
+check_config:
+  key: disableBypassPermissionsMode
+  expected_value: "disable"
+
+remediation: Set disableBypassPermissionsMode to disable.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings

@@ -1,0 +1,12 @@
+id: CC999
+name: Invalid Check Missing Scope
+description: This check is missing the required scope field.
+
+severity: HIGH
+threat: N/A
+category: test
+check_type: config_value
+check_config:
+  key: someKey
+  expected_value: "someValue"
+remediation: N/A
