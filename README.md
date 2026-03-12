@@ -16,13 +16,13 @@ Clauditor audits your Claude Code settings and repository configuration to detec
 ## Table of Contents
 
 - [Features](#features)
+- [Built-in Checks](#built-in-checks)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration Scopes](#configuration-scopes)
 - [How Findings Work](#how-findings-work)
-- [Enforcing a Minimum Scope](#--base-level-enforcing-a-minimum-scope)
+- [Enforcing a Minimum Scope](#enforcing-a-minimum-scope)
 - [Check Format](#check-format)
-- [Built-in Checks](#built-in-checks)
 - [Generating a Settings File](#generating-a-settings-file)
 - [Adding a Custom Check](#adding-a-custom-check)
 - [Architecture](#architecture)
@@ -40,6 +40,25 @@ Clauditor audits your Claude Code settings and repository configuration to detec
 - Rich terminal output with optional verbose remediation steps
 - CI-friendly `--exit-code` flag
 - `--base-level` flag to enforce a minimum required scope
+
+---
+
+## Built-in Checks
+
+| ID | Name | Severity | Scope | Threat Mitigated |
+|----|------|----------|-------|-----------------|
+| CC001 | CODEOWNERS Enforcement for Claude Code Paths | HIGH | repository | Supply chain attacks via unreviewed config changes |
+| CC002 | Disable Bypass Permissions Mode | CRITICAL | user, project, local, managed | Unrestricted tool execution via --dangerously-skip-permissions |
+| CC003 | Enforce Managed Permission Rules Only | LOW | managed | User/project permission rules bypassing IT policy |
+| CC004 | Deny Sensitive File Operations | LOW | managed | Credential theft via .env, secrets/**, credential files |
+| CC005 | Disable Auto-Approval of Project MCP Servers | LOW | managed | Supply chain attacks via malicious .mcp.json |
+| CC006 | Enforce Managed Hooks Only | LOW | managed | Arbitrary code execution via project/user hooks |
+| CC007 | Force SSO Login Method | MEDIUM | managed | Unmanaged personal accounts bypassing corporate identity |
+| CC008 | Require SSO Organization UUID | MEDIUM | managed | Cross-tenant auth or unbound SSO enforcement |
+| CC009 | Require Approval for Network-Fetching Tools | LOW | managed | Unlogged outbound requests via curl/wget |
+| CC010 | Enable Bash Sandboxing | LOW | user, project, local, managed | Unrestricted shell access bypassing permission limits |
+| CC011 | Restrict Sandbox Filesystem Write Paths | MEDIUM | user, project, local, managed | Writes to /etc, /usr, ~/.ssh, ~/.aws enabling persistence |
+| CC012 | Restrict Sandbox Filesystem Read Paths | MEDIUM | user, project, local, managed | Exfiltration of SSH keys, cloud credentials, .env secrets |
 
 ---
 
@@ -73,20 +92,8 @@ clauditor scan --path /path/to/repo
 # Clone and scan a remote repository
 clauditor scan --url https://github.com/org/repo
 
-# Scan only user scope (~/.claude/settings.json)
-clauditor scan --user-only
-
-# Require settings to be enforced at project level or above
-clauditor scan --base-level project
-
-# Require enterprise-wide enforcement (managed only)
-clauditor scan --base-level managed
-
 # Filter by severity
 clauditor scan --severity CRITICAL,HIGH
-
-# Filter by scope
-clauditor scan --scope user,project
 
 # Show remediation steps for failed checks
 clauditor scan -v
@@ -97,19 +104,10 @@ clauditor scan --exit-code
 # List all available checks
 clauditor list-checks
 
-# Generate a user settings file covering user-scoped checks (default)
+# Generate a settings file (user scope by default)
 clauditor generate
 
-# Generate a project-level settings file (.claude/settings.json)
-clauditor generate --scope project
-
-# Generate only for critical checks
-clauditor generate --severity CRITICAL
-
-# Generate for specific checks
-clauditor generate --checks CC002,CC010,CC011
-
-# Write directly to a file
+# Generate a managed settings file covering all checks
 clauditor generate --scope managed -o managed-settings.json
 ```
 
@@ -118,6 +116,8 @@ clauditor generate --scope managed -o managed-settings.json
 ## Configuration Scopes
 
 Claude Code reads settings from multiple locations. Each location is a **scope**. Understanding scopes is key to understanding Clauditor's output.
+
+See the [official Claude Code settings documentation](https://code.claude.com/docs/en/settings) for details.
 
 ### The four Claude Code scopes
 
@@ -182,22 +182,6 @@ The **effective status** in the Status column is determined by the highest-prece
 
 Setting is in managed. Everyone on the machine is protected. Lower scopes are irrelevant.
 
-**Scenario B — Enforced via project settings (team-level)**
-
-| M | L | P | U | Status |
-|---|---|---|---|--------|
-| – | – | ✔ | ↑ | ✔ PASS |
-
-Setting is in `.claude/settings.json` (committed to git). All collaborators are protected. User scope is covered.
-
-**Scenario C — Only the individual has it set**
-
-| M | L | P | U | Status |
-|---|---|---|---|--------|
-| – | – | – | ✔ | ✔ PASS |
-
-Setting is only in `~/.claude/settings.json`. Your own machine is protected, but teammates are not. This is PASS by default, but see `--base-level` below.
-
 **Scenario D — Nobody has it set**
 
 | M | L | P | U | Status |
@@ -206,17 +190,9 @@ Setting is only in `~/.claude/settings.json`. Your own machine is protected, but
 
 The setting is not configured anywhere. This is always FAIL — a missing setting provides no protection.
 
-**Scenario E — Wrong value at managed level**
-
-| M | L | P | U | Status |
-|---|---|---|---|--------|
-| ✘ | – | ✔ | ✔ | ✘ FAIL |
-
-Managed has the wrong value. Because managed takes highest precedence, it overrides the correct project/user values. Effective status is FAIL.
-
 ---
 
-## `--base-level`: Enforcing a minimum scope
+## Enforcing a Minimum Scope
 
 By default, Clauditor marks a check as PASS if the setting is correctly configured at **any** scope. However, you may want to require enforcement at a specific level.
 
@@ -228,7 +204,7 @@ clauditor scan --base-level project
 clauditor scan --base-level managed
 ```
 
-With `--base-level project`, **Scenario C above becomes FAIL** — the setting is only personal and doesn't protect the team.
+With `--base-level project`, a setting that is only present in the user scope becomes FAIL — the setting is only personal and doesn't protect the team.
 
 | `--base-level` | What passes |
 |----------------|-------------|
@@ -297,35 +273,17 @@ references:
 
 ---
 
-## Built-in Checks
-
-| ID | Name | Severity | Scope | Threat Mitigated |
-|----|------|----------|-------|-----------------|
-| CC001 | CODEOWNERS Enforcement for Claude Code Paths | HIGH | repository | Supply chain attacks via unreviewed config changes |
-| CC002 | Disable Bypass Permissions Mode | CRITICAL | user, project, local, managed | Unrestricted tool execution via --dangerously-skip-permissions |
-| CC003 | Enforce Managed Permission Rules Only | LOW | managed | User/project permission rules bypassing IT policy |
-| CC004 | Deny Sensitive File Operations | LOW | managed | Credential theft via .env, secrets/**, credential files |
-| CC005 | Disable Auto-Approval of Project MCP Servers | LOW | managed | Supply chain attacks via malicious .mcp.json |
-| CC006 | Enforce Managed Hooks Only | LOW | managed | Arbitrary code execution via project/user hooks |
-| CC007 | Force SSO Login Method | MEDIUM | managed | Unmanaged personal accounts bypassing corporate identity |
-| CC008 | Require SSO Organization UUID | MEDIUM | managed | Cross-tenant auth or unbound SSO enforcement |
-| CC009 | Require Approval for Network-Fetching Tools | LOW | managed | Unlogged outbound requests via curl/wget |
-| CC010 | Enable Bash Sandboxing | LOW | user, project, local, managed | Unrestricted shell access bypassing permission limits |
-| CC011 | Restrict Sandbox Filesystem Write Paths | MEDIUM | user, project, local, managed | Writes to /etc, /usr, ~/.ssh, ~/.aws enabling persistence |
-| CC012 | Restrict Sandbox Filesystem Read Paths | MEDIUM | user, project, local, managed | Exfiltration of SSH keys, cloud credentials, .env secrets |
-
----
-
 ## Generating a Settings File
 
 `clauditor generate` produces a ready-to-deploy JSON settings file containing all the values needed to remediate the applicable checks.
 
 ```bash
-clauditor generate                          # All checks → managed settings
+clauditor generate                          # All checks → user settings
+clauditor generate --scope managed         # Full managed settings file
 clauditor generate --scope project         # Project-level (.claude/settings.json)
 clauditor generate --severity CRITICAL     # Only critical checks
 clauditor generate --checks CC002,CC010    # Specific checks only
-clauditor generate -o managed-settings.json
+clauditor generate --scope managed -o managed-settings.json
 ```
 
 **Scope controls which checks are included:**
