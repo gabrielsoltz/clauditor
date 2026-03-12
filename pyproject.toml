@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "clauditor"
-version = "0.2.3"
+version = "0.3.0"
 description = "Security configuration scanner for Claude Code"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -56,3 +56,12 @@ select = ["E", "F", "I", "UP"]
 [tool.mypy]
 python_version = "3.13"
 strict = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["clauditor"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/clauditor",
+  "/README.md",
+]
