@@ -1,0 +1,15 @@
+id: BADID
+name: Invalid Check Bad ID
+description: This check has an invalid ID format.
+
+scope:
+  - project
+
+severity: HIGH
+threat: N/A
+category: test
+check_type: config_value
+check_config:
+  key: someKey
+  expected_value: "someValue"
+remediation: N/A

@@ -1,0 +1,4 @@
+# CODEOWNERS — missing /CLAUDE.md entry
+* @org/team
+
+/.claude/ @security-team

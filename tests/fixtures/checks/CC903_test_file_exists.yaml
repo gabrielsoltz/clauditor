@@ -1,0 +1,26 @@
+id: CC903
+name: Test File Exists Check
+description: Test check for file_exists checker unit tests.
+
+scope:
+  - repository
+
+severity: MEDIUM
+
+threat: Test threat for file existence checks.
+
+category: test
+
+check_type: file_exists
+
+check_config:
+  paths:
+    - CODEOWNERS
+    - .github/CODEOWNERS
+  any_of: true
+
+remediation: Add a CODEOWNERS file.
+
+fix_available: true
+
+references: []
