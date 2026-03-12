@@ -8,9 +8,9 @@ from tests.conftest import CHECKS_FIXTURES_DIR
 
 
 class TestLoadBuiltinChecks:
-    def test_loads_twelve_builtin_checks(self) -> None:
+    def test_loads_builtin_checks(self) -> None:
         checks = load_checks()
-        assert len(checks) == 12
+        assert len(checks) == 33
 
     def test_check_ids_are_unique(self) -> None:
         checks = load_checks()
