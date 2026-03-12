@@ -1,0 +1,41 @@
+id: CC003
+name: Enforce Managed Permission Rules Only
+description: >
+  Ensures that allowManagedPermissionRulesOnly is set to true in managed settings,
+  restricting permission rules to only those deployed by IT administrators.
+  This prevents users and projects from defining their own allow/deny rules that
+  could bypass centrally enforced controls.
+
+scope:
+  - managed
+
+severity: LOW
+
+threat: >
+  Without this setting, users or project-level configuration can define custom
+  permission allow rules that override or circumvent the security policies set
+  by IT administrators. An attacker or misconfigured project could grant Claude
+  unrestricted access to tools or file paths that should be blocked by policy.
+
+category: permissions
+
+check_type: config_value
+
+check_config:
+  key: allowManagedPermissionRulesOnly
+  expected_value: true
+
+remediation: >
+  Deploy the following in your managed Claude Code settings:
+    {
+      "allowManagedPermissionRulesOnly": true
+    }
+
+  This setting is only effective in managed scope (IT-deployed settings).
+  It prevents user-level and project-level permission rules from adding
+  additional allow rules beyond what is centrally approved.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings

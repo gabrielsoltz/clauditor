@@ -1,0 +1,44 @@
+id: CC005
+name: Disable Auto-Approval of Project MCP Servers
+description: >
+  Ensures that enableAllProjectMcpServers is set to false in managed settings,
+  preventing Claude Code from automatically trusting and enabling all MCP servers
+  defined in a repository's .mcp.json file without explicit user approval.
+
+scope:
+  - managed
+
+severity: LOW
+
+threat: >
+  When enableAllProjectMcpServers is true, any MCP server declared in a
+  repository's .mcp.json is automatically enabled and trusted. A malicious
+  or compromised repository can ship a .mcp.json that registers an attacker-
+  controlled MCP server, giving it access to Claude's tool execution pipeline.
+  This enables supply chain attacks where cloning or opening a repository
+  silently installs a malicious MCP server capable of exfiltrating data,
+  executing commands, or manipulating Claude's responses.
+
+category: supply_chain
+
+check_type: config_value
+
+check_config:
+  key: enableAllProjectMcpServers
+  expected_value: false
+
+remediation: >
+  Deploy the following in your managed Claude Code settings:
+    {
+      "enableAllProjectMcpServers": false
+    }
+
+  With this setting disabled, users must explicitly approve each project MCP
+  server before it is enabled. Review .mcp.json entries in repositories before
+  approving them, especially from external or untrusted sources.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://spec.modelcontextprotocol.io/specification/

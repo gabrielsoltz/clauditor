@@ -1,0 +1,59 @@
+id: CC012
+name: Restrict Sandbox Filesystem Read Paths
+description: >
+  Ensures that sandbox.filesystem.denyRead is configured to block reads
+  from credential files and SSH key directories, preventing Claude from
+  accessing secrets even when it has been granted Bash or Read tool access.
+
+scope:
+  - user
+  - project
+  - local
+  - managed
+
+severity: MEDIUM
+
+threat: >
+  Without read path restrictions, Claude can read SSH private keys, cloud
+  provider credentials, and .env files containing application secrets. Even
+  with file permission rules configured, a Bash command like "cat ~/.ssh/id_rsa"
+  or "env | grep SECRET" can exfiltrate sensitive material through tool output
+  or subsequent network requests. denyRead rules provide a hard block at the
+  sandbox level that cannot be bypassed by permission allow rules.
+
+category: sandboxing
+
+check_type: config_contains
+
+check_config:
+  key: sandbox.filesystem.denyRead
+  required_values:
+    - "~/.ssh"
+    - "~/.aws/credentials"
+    - ".env"
+    - "**/.env"
+
+remediation: >
+  Configure sandbox read restrictions in your Claude Code settings:
+    {
+      "sandbox": {
+        "filesystem": {
+          "denyRead": [
+            "~/.ssh",
+            "~/.aws/credentials",
+            ".env",
+            "**/.env"
+          ]
+        }
+      }
+    }
+
+  Add additional paths appropriate for your environment (e.g.
+  "~/.config/gcloud/credentials.db", "**/*.pem", "**/*.key").
+  Ensure your development workflow does not require Claude to read
+  these paths legitimately before applying these restrictions.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings

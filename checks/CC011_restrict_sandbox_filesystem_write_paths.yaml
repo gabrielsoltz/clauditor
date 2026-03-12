@@ -1,0 +1,60 @@
+id: CC011
+name: Restrict Sandbox Filesystem Write Paths
+description: >
+  Ensures that sandbox.filesystem.denyWrite is configured to block writes
+  to critical system directories and user credential directories, preventing
+  Claude from modifying OS files, SSH keys, cloud credentials, or other
+  sensitive paths even when sandboxing is enabled.
+
+scope:
+  - user
+  - project
+  - local
+  - managed
+
+severity: MEDIUM
+
+threat: >
+  Without write path restrictions, a sandboxed Claude session can still write
+  to /etc (modifying system configuration), /usr (planting executables),
+  ~/.ssh (replacing authorized keys or adding known hosts), or ~/.aws
+  (overwriting cloud credentials). These writes enable persistence mechanisms,
+  privilege escalation, or credential theft that survive the Claude session.
+  Explicit denyWrite rules ensure these paths cannot be modified regardless
+  of what commands are approved.
+
+category: sandboxing
+
+check_type: config_contains
+
+check_config:
+  key: sandbox.filesystem.denyWrite
+  required_values:
+    - "/etc"
+    - "/usr"
+    - "~/.ssh"
+    - "~/.aws"
+
+remediation: >
+  Configure sandbox write restrictions in your Claude Code settings:
+    {
+      "sandbox": {
+        "filesystem": {
+          "denyWrite": [
+            "/etc",
+            "/usr",
+            "~/.ssh",
+            "~/.aws"
+          ]
+        }
+      }
+    }
+
+  Add additional paths appropriate for your environment (e.g. /boot, /sys,
+  ~/.config/gcloud). Test with your development workflows to ensure
+  legitimate write paths are not blocked.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings

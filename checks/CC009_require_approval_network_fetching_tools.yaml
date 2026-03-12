@@ -1,0 +1,50 @@
+id: CC009
+name: Require Approval for Network-Fetching Tools
+description: >
+  Ensures that managed settings include deny rules for direct network-fetching
+  shell commands (curl, wget, etc.), requiring users to use Claude's built-in
+  WebFetch tool instead. The built-in tool is subject to permission controls
+  and audit logging; raw curl/wget in Bash bypass these controls entirely.
+
+scope:
+  - managed
+
+severity: LOW
+
+threat: >
+  When curl and wget are unrestricted in Bash, Claude can make arbitrary
+  outbound network requests without going through permission controls or
+  generating tool-level audit events. This can be used to exfiltrate data,
+  download and execute payloads, or communicate with attacker-controlled
+  infrastructure. Funneling network access through WebFetch ensures all
+  outbound requests are logged and subject to approval workflows.
+
+category: permissions
+
+check_type: config_contains
+
+check_config:
+  key: permissions.deny
+  required_values:
+    - "Bash(curl:*)"
+    - "Bash(wget:*)"
+
+remediation: >
+  Deploy deny rules for network-fetching commands in managed Claude Code settings:
+    {
+      "permissions": {
+        "deny": [
+          "Bash(curl:*)",
+          "Bash(wget:*)"
+        ]
+      }
+    }
+
+  Consider also denying other network tools as appropriate for your environment
+  (e.g. "Bash(nc:*)", "Bash(ncat:*)"). Users who need to fetch URLs should
+  use the WebFetch tool, which is subject to permission prompts.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings

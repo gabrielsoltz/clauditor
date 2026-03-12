@@ -1,0 +1,14 @@
+id: CC905
+name: Test Config Set Check
+description: Fixture check for config_set checker tests.
+scope:
+  - managed
+severity: MEDIUM
+threat: Test threat.
+category: test
+check_type: config_set
+check_config:
+  key: forceLoginOrgUUID
+remediation: Set the required key.
+fix_available: false
+references: []

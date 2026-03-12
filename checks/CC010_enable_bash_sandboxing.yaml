@@ -1,0 +1,53 @@
+id: CC010
+name: Enable Bash Sandboxing
+description: >
+  Ensures that sandbox.enabled is set to true, activating Claude Code's
+  built-in sandbox for Bash tool execution. The sandbox restricts what
+  the shell can access and modify, providing a containment layer even when
+  permission prompts are approved.
+
+scope:
+  - user
+  - project
+  - local
+  - managed
+
+severity: LOW
+
+threat: >
+  Without sandboxing, approved Bash commands execute with the full privileges
+  of the user running Claude Code, with unrestricted access to the filesystem,
+  network, and system resources. Even with permission rules in place, a single
+  approved command can pivot to unintended actions. Sandboxing adds a defense-
+  in-depth layer that limits the blast radius of any approved or unintended
+  command execution, particularly important in CI/CD pipelines and shared
+  environments.
+
+category: sandboxing
+
+check_type: config_value
+
+check_config:
+  key: sandbox.enabled
+  expected_value: true
+
+remediation: >
+  Enable sandboxing in your Claude Code settings:
+    {
+      "sandbox": {
+        "enabled": true
+      }
+    }
+
+  Sandboxing can be configured at user (~/.claude/settings.json),
+  project (.claude/settings.json), local (.claude/settings.local.json),
+  or managed scope. For team-wide enforcement, use project or managed scope.
+
+  Note: Sandboxing may affect commands that require broad filesystem access.
+  Test with your development workflows and configure filesystem allow rules
+  as needed.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings

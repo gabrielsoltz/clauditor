@@ -251,6 +251,8 @@ references:
 | `check_type` | `check_config` keys | Description |
 |---|---|---|
 | `config_value` | `key`, `expected_value` | Verifies a key/value in a JSON settings file |
+| `config_contains` | `key`, `required_values` | Verifies a list key contains all required values |
+| `config_set` | `key` | Verifies a key is present and non-empty (any truthy value) |
 | `file_content` | `search_paths`, `required_entries` | Verifies required lines exist in a file |
 | `file_exists` | `paths`, `any_of` | Verifies file(s) exist in the repository |
 
@@ -262,6 +264,16 @@ references:
 |----|------|----------|-------|-----------------|
 | CC001 | CODEOWNERS Enforcement for Claude Code Paths | HIGH | repository | Supply chain attacks via unreviewed config changes |
 | CC002 | Disable Bypass Permissions Mode | CRITICAL | user, project, local, managed | Unrestricted tool execution via --dangerously-skip-permissions |
+| CC003 | Enforce Managed Permission Rules Only | LOW | managed | User/project permission rules bypassing IT policy |
+| CC004 | Deny Sensitive File Operations | LOW | managed | Credential theft via .env, secrets/**, credential files |
+| CC005 | Disable Auto-Approval of Project MCP Servers | LOW | managed | Supply chain attacks via malicious .mcp.json |
+| CC006 | Enforce Managed Hooks Only | LOW | managed | Arbitrary code execution via project/user hooks |
+| CC007 | Force SSO Login Method | MEDIUM | managed | Unmanaged personal accounts bypassing corporate identity |
+| CC008 | Require SSO Organization UUID | MEDIUM | managed | Cross-tenant auth or unbound SSO enforcement |
+| CC009 | Require Approval for Network-Fetching Tools | LOW | managed | Unlogged outbound requests via curl/wget |
+| CC010 | Enable Bash Sandboxing | LOW | user, project, local, managed | Unrestricted shell access bypassing permission limits |
+| CC011 | Restrict Sandbox Filesystem Write Paths | MEDIUM | user, project, local, managed | Writes to /etc, /usr, ~/.ssh, ~/.aws enabling persistence |
+| CC012 | Restrict Sandbox Filesystem Read Paths | MEDIUM | user, project, local, managed | Exfiltration of SSH keys, cloud credentials, .env secrets |
 
 ---
 

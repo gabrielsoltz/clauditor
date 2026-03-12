@@ -1,0 +1,46 @@
+id: CC008
+name: Require SSO Organization UUID
+description: >
+  Ensures that forceLoginOrgUUID is set in managed settings, binding
+  Claude Code authentication to a specific organization's SSO provider.
+  This setting works in conjunction with forceLoginMethod to enforce
+  that users authenticate through the correct corporate identity.
+
+scope:
+  - managed
+
+severity: MEDIUM
+
+threat: >
+  Without forceLoginOrgUUID, even if forceLoginMethod is set to "claudeai",
+  users may authenticate through a different organization's SSO or a personal
+  account. Setting the org UUID ensures authentication is scoped to your
+  organization's identity provider, preventing account confusion, cross-tenant
+  access, and unauthorized use of Claude with another organization's billing
+  or audit trail.
+
+category: identity
+
+check_type: config_set
+
+check_config:
+  key: forceLoginOrgUUID
+
+remediation: >
+  Deploy the following in your managed Claude Code settings:
+    {
+      "forceLoginMethod": "claudeai",
+      "forceLoginOrgUUID": "<your-organization-uuid>"
+    }
+
+  Retrieve your organization UUID from the Claude.ai admin console under
+  Organization Settings. This setting should always be deployed together
+  with forceLoginMethod.
+
+  This setting requires Team or Enterprise plan with managed settings
+  deployment.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
