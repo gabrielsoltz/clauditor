@@ -1,0 +1,48 @@
+id: CC006
+name: Enforce Managed Hooks Only
+description: >
+  Ensures that allowManagedHooksOnly is set to true in managed settings,
+  restricting Claude Code hooks to only those deployed by IT administrators.
+  This blocks user-defined, project-defined, and plugin-defined hooks from
+  executing arbitrary commands on Claude Code lifecycle events.
+
+scope:
+  - managed
+
+severity: LOW
+
+threat: >
+  Claude Code hooks execute shell commands on lifecycle events (PreToolUse,
+  PostToolUse, Stop, etc.) with the same privileges as the user running Claude.
+  Without this restriction, a malicious repository can ship project-level hooks
+  in .claude/settings.json that execute arbitrary commands whenever Claude
+  performs an action. This is a direct code execution vector: cloning a
+  repository and running Claude is sufficient to trigger the hooks, enabling
+  supply chain attacks, data exfiltration, or persistence mechanisms.
+
+category: hooks
+
+check_type: config_value
+
+check_config:
+  key: allowManagedHooksOnly
+  expected_value: true
+
+remediation: >
+  Deploy the following in your managed Claude Code settings:
+    {
+      "allowManagedHooksOnly": true
+    }
+
+  This setting restricts hook execution to only hooks defined in the managed
+  settings file. User-level (~/.claude/settings.json), project-level
+  (.claude/settings.json), and plugin hooks will be ignored.
+
+  Note: This setting requires Team or Enterprise plan with managed settings
+  deployment.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/hooks

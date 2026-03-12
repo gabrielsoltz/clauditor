@@ -22,6 +22,8 @@ class Scope(StrEnum):
 
 class CheckType(StrEnum):
     CONFIG_VALUE = "config_value"  # Check a key/value in a JSON settings file
+    CONFIG_CONTAINS = "config_contains"  # Check a key (list) contains all required values
+    CONFIG_SET = "config_set"  # Check a key is present and non-empty (any truthy value)
     FILE_CONTENT = "file_content"  # Check content inside a file
     FILE_EXISTS = "file_exists"  # Check that a file exists
 

@@ -1,0 +1,55 @@
+id: CC004
+name: Deny Sensitive File Operations
+description: >
+  Ensures that managed settings include deny rules for reading sensitive files
+  such as .env files, secrets directories, and credential files. These deny
+  rules prevent Claude from accessing secrets that may be present in the
+  working directory or repository.
+
+scope:
+  - managed
+
+severity: LOW
+
+threat: >
+  Without explicit deny rules for sensitive file paths, Claude can read .env
+  files, secrets directories, and credential files when instructed to do so
+  by a prompt, a hook, or a malicious repository instruction. This can lead
+  to secret exfiltration via tool output, logs, or subsequent network requests.
+  In repositories with .env files or mounted secret volumes, this is a direct
+  path to credential theft.
+
+category: permissions
+
+check_type: config_contains
+
+check_config:
+  key: permissions.deny
+  required_values:
+    - "Read(.env)"
+    - "Read(**/.env)"
+    - "Read(secrets/**)"
+    - "Write(secrets/**)"
+    - "Read(**/credentials)"
+
+remediation: >
+  Deploy deny rules for sensitive file paths in your managed Claude Code settings:
+    {
+      "permissions": {
+        "deny": [
+          "Read(.env)",
+          "Read(**/.env)",
+          "Read(secrets/**)",
+          "Write(secrets/**)",
+          "Read(**/credentials)"
+        ]
+      }
+    }
+
+  Add additional patterns as required for your environment (e.g.
+  "Read(**/*.pem)", "Read(**/*.key)", "Read(**/.aws/credentials)").
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings

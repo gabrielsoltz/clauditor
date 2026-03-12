@@ -1,0 +1,17 @@
+id: CC904
+name: Test Config Contains Check
+description: Fixture check for config_contains checker tests.
+scope:
+  - managed
+severity: LOW
+threat: Test threat.
+category: test
+check_type: config_contains
+check_config:
+  key: permissions.deny
+  required_values:
+    - "Read(.env)"
+    - "Read(secrets/**)"
+remediation: Add the required entries to permissions.deny.
+fix_available: false
+references: []

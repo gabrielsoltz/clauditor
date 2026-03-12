@@ -1,0 +1,47 @@
+id: CC007
+name: Force SSO Login Method
+description: >
+  Ensures that forceLoginMethod is set to "claudeai" in managed settings,
+  requiring all users to authenticate through Claude.ai SSO rather than
+  other login methods. This ensures corporate identity and access management
+  policies are enforced for Claude Code usage.
+
+scope:
+  - managed
+
+severity: MEDIUM
+
+threat: >
+  Without enforcing SSO as the login method, users can authenticate with
+  personal Claude accounts that are not subject to corporate access controls,
+  audit logging, or revocation policies. If an employee leaves the organization
+  or an account is compromised, IT cannot centrally revoke access through the
+  corporate identity provider. SSO enforcement is also required for compliance
+  with access management policies in regulated industries.
+
+category: identity
+
+check_type: config_value
+
+check_config:
+  key: forceLoginMethod
+  expected_value: "claudeai"
+
+remediation: >
+  Deploy the following in your managed Claude Code settings:
+    {
+      "forceLoginMethod": "claudeai",
+      "forceLoginOrgUUID": "<your-organization-uuid>"
+    }
+
+  The forceLoginOrgUUID is required alongside forceLoginMethod to bind
+  authentication to your specific organization. Retrieve your organization
+  UUID from the Claude.ai admin console.
+
+  This setting requires Team or Enterprise plan with managed settings
+  deployment.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
