@@ -1,0 +1,46 @@
+id: CC017
+name: Enforce Managed MCP Servers Only
+description: >
+  Ensures that allowManagedMcpServersOnly is set to true in managed settings.
+  This prevents users from adding arbitrary MCP servers through local or project
+  configuration, restricting MCP server usage to the IT-approved managed allowlist.
+
+scope:
+  - managed
+
+severity: HIGH
+
+threat: >
+  Without allowManagedMcpServersOnly, users can add arbitrary MCP servers through
+  ~/.claude/settings.json or project-level .mcp.json even when managed settings
+  define an approved server list. MCP servers run as local processes with full
+  Claude session authority — file access, network calls, tool execution, and shell
+  commands. A compromised or malicious MCP server injected via an untrusted
+  repository's .mcp.json is the attack vector demonstrated in CVE-2025-59536.
+  This setting is the MCP equivalent of allowManagedPermissionRulesOnly and
+  allowManagedHooksOnly, closing the same class of bypass for MCP configuration.
+
+category: supply_chain
+
+check_type: config_value
+
+check_config:
+  key: allowManagedMcpServersOnly
+  expected_value: true
+
+remediation: >
+  Deploy the following in your managed Claude Code settings:
+
+    {
+      "allowManagedMcpServersOnly": true
+    }
+
+  Also define the approved MCP server allowlist in managed settings. This setting
+  requires managed scope deployment and is intended for enterprise environments
+  where IT controls the approved toolchain.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/mcp

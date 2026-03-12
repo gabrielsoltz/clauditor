@@ -1,0 +1,55 @@
+id: CC033
+name: Block Unrestricted WebFetch in Permissions Allow List
+description: >
+  Ensures that permissions.allow does NOT contain bare "WebFetch" or "WebFetch(*)"
+  entries. Unrestricted WebFetch pre-approves fetching from any URL, making it
+  the primary prompt injection surface: any web page Claude fetches can embed
+  instructions that Claude acts on without further approval.
+
+scope:
+  - project
+  - managed
+
+severity: MEDIUM
+
+threat: >
+  The WebFetch tool fetches arbitrary URLs and injects the full page content into
+  Claude's context window. This is the primary prompt injection attack surface:
+  a malicious web page can embed instructions that Claude treats as legitimate
+  commands and acts on without user confirmation. Pre-approving unrestricted
+  WebFetch via permissions.allow removes the per-URL confirmation step that
+  provides an opportunity for users to review unusual fetch requests. Lasso
+  Security's research specifically identifies WebFetch output as high-risk and
+  recommends hook-based scanning of fetched content precisely because unrestricted
+  WebFetch enables indirect prompt injection at scale. Domain-scoped rules like
+  "WebFetch(domain:docs.anthropic.com)" are acceptable; bare "WebFetch" is not.
+
+category: permissions
+
+check_type: config_not_contains
+
+check_config:
+  key: permissions.allow
+  forbidden_values:
+    - "WebFetch"
+    - "WebFetch(*)"
+
+remediation: >
+  Remove bare WebFetch allow rules from the appropriate Claude Code settings file.
+  Replace with domain-scoped rules that limit fetching to known-safe sources:
+
+  Instead of:
+    { "permissions": { "allow": ["WebFetch"] } }
+
+  Use domain-scoped patterns:
+    { "permissions": { "allow": ["WebFetch(domain:docs.anthropic.com)", "WebFetch(domain:api.example.com)"] } }
+
+  This ensures Claude can still fetch from approved sources while requiring
+  approval (and giving users visibility) for fetches to unknown domains.
+
+fix_available: false
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/permissions
+  - https://github.com/lasso-security/claude-hooks

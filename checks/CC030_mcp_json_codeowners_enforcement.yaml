@@ -1,0 +1,56 @@
+id: CC030
+name: CODEOWNERS Enforcement for .mcp.json
+description: >
+  Ensures that .mcp.json has a CODEOWNERS entry requiring security team review.
+  .mcp.json defines MCP servers shared with all project contributors — any
+  change to it should require security oversight to prevent supply chain attacks
+  via unauthorized MCP server additions.
+
+scope:
+  - repository
+
+severity: HIGH
+
+threat: >
+  .mcp.json in the repository root defines MCP servers that are shared with all
+  project contributors. MCP servers run as local processes with full Claude session
+  authority: file access, network calls, tool execution, and shell commands. Without
+  CODEOWNERS enforcement, any contributor with write access can add a malicious MCP
+  server to .mcp.json without security review. CVE-2025-59536 demonstrated that MCP
+  server definitions in project files are a primary supply chain attack vector — an
+  attacker can add a server that intercepts tool calls, exfiltrates session data,
+  or executes arbitrary code on every developer's machine when they open the project.
+
+category: supply_chain
+
+check_type: file_content
+
+check_config:
+  search_paths:
+    - CODEOWNERS
+    - .github/CODEOWNERS
+    - .gitlab/CODEOWNERS
+    - docs/CODEOWNERS
+  required_entries:
+    - pattern: ".mcp.json"
+      owner: "@security-team"
+
+remediation: >
+  Add the following entry to your CODEOWNERS file
+  (CODEOWNERS, .github/CODEOWNERS, .gitlab/CODEOWNERS, or docs/CODEOWNERS):
+
+    .mcp.json @security-team
+
+  Replace @security-team with your organization's actual security team
+  GitHub/GitLab handle. This will require security team approval on any
+  pull request that adds or modifies the .mcp.json file.
+
+  Also consider adding entries for any MCP configuration directories:
+    /.mcp/ @security-team
+
+fix_available: true
+
+references:
+  - https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+  - https://code.claude.com/docs/en/mcp
+  - https://code.claude.com/docs/en/settings

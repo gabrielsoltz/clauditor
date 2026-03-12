@@ -1,0 +1,50 @@
+id: CC032
+name: Disable Filesystem Server in MCP JSON Servers
+description: >
+  Ensures that disabledMcpjsonServers contains "filesystem", preventing the
+  built-in filesystem MCP server from being enabled via .mcp.json even if it
+  is explicitly listed in enabledMcpjsonServers. This provides defense-in-depth
+  alongside CC026 (deniedMcpServers).
+
+scope:
+  - user
+  - project
+  - managed
+
+severity: MEDIUM
+
+threat: >
+  Even when enableAllProjectMcpServers is false (CC005) and deniedMcpServers
+  includes "filesystem" (CC026), individual servers from .mcp.json can still be
+  explicitly activated via enabledMcpjsonServers. disabledMcpjsonServers provides
+  a separate, additive denylist that merges from all scopes and takes precedence
+  over any enable rules. This is a defense-in-depth layer: if any other control
+  fails or is misconfigured, disabledMcpjsonServers at user or project scope
+  ensures the high-risk filesystem server cannot be activated for that session.
+
+category: supply_chain
+
+check_type: config_contains
+
+check_config:
+  key: disabledMcpjsonServers
+  required_values:
+    - "filesystem"
+
+remediation: >
+  Add the filesystem server to the disabled MCP JSON servers list in the
+  appropriate Claude Code settings file:
+
+    {
+      "disabledMcpjsonServers": ["filesystem"]
+    }
+
+  This setting can be deployed at user, project, or managed scope. Deploy at
+  managed scope for organization-wide enforcement, and at project scope as
+  defense-in-depth for individual repositories.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/mcp

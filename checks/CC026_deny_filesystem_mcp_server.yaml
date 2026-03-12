@@ -1,0 +1,51 @@
+id: CC026
+name: Deny Filesystem MCP Server
+description: >
+  Ensures that deniedMcpServers explicitly includes the "filesystem" server.
+  The built-in filesystem MCP server grants Claude access to the entire local
+  filesystem, bypassing project-scoped permissions.deny rules and sandbox
+  filesystem restrictions.
+
+scope:
+  - managed
+  - project
+
+severity: HIGH
+
+threat: >
+  The built-in "filesystem" MCP server provides Claude with unrestricted read
+  and write access to the local filesystem, effectively bypassing all
+  permissions.deny rules configured for the Read, Write, and Edit tools.
+  Sandbox filesystem restrictions (CC011, CC012) also do not apply to MCP tool
+  calls. If the filesystem server is enabled — even accidentally via
+  enabledMcpjsonServers — it creates a direct path to read credentials, SSH keys,
+  cloud config files, and any other sensitive data on disk. Using deniedMcpServers
+  as a denylist provides defense-in-depth: even if the server is referenced in
+  .mcp.json, it cannot be enabled.
+
+category: supply_chain
+
+check_type: config_contains
+
+check_config:
+  key: deniedMcpServers
+  required_values:
+    - "filesystem"
+
+remediation: >
+  Add the filesystem server to the MCP server denylist in the appropriate
+  Claude Code settings file:
+
+    {
+      "deniedMcpServers": ["filesystem"]
+    }
+
+  For managed settings, this provides the strongest enforcement. For project
+  settings, this ensures that even if a developer's .mcp.json references the
+  filesystem server, it cannot be activated for this project.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/mcp

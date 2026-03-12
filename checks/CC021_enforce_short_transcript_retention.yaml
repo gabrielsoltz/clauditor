@@ -1,0 +1,54 @@
+id: CC021
+name: Enforce Short Transcript Retention Period
+description: >
+  Ensures that cleanupPeriodDays is explicitly configured. Session transcripts
+  contain conversation history including code snippets, file contents, tool outputs,
+  and potentially secrets exposed during tool calls. Long or unlimited retention
+  increases the exposure window for credential-containing transcripts stored on disk.
+  Recommended value is 14 days or less.
+
+scope:
+  - user
+  - project
+  - managed
+
+severity: MEDIUM
+
+threat: >
+  Claude Code session transcripts are stored on disk and include the full
+  conversation history: file contents Claude read, tool outputs, command results,
+  and any secrets that were inadvertently included in prompts or tool responses.
+  When cleanupPeriodDays is not set (the default), transcripts accumulate
+  indefinitely. An attacker with local disk access, or a process that can read
+  the transcript directory, gains access to a historical record of everything
+  Claude processed — including credentials, API keys, and sensitive file contents
+  from past sessions. Security best practice (Backslash Security) recommends
+  7–14 day retention.
+
+category: data_exposure
+
+check_type: config_set
+
+check_config:
+  key: cleanupPeriodDays
+
+remediation: >
+  Set cleanupPeriodDays to 14 or less in the appropriate Claude Code settings file:
+
+    {
+      "cleanupPeriodDays": 14
+    }
+
+  Shorter retention (7 days) provides stronger protection. Balance retention
+  period against your team's need to reference past session context.
+  Deploy via managed settings for organization-wide enforcement:
+
+    {
+      "cleanupPeriodDays": 14
+    }
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://www.backslash.security/blog/claude-code-security-best-practices

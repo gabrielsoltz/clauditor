@@ -1,0 +1,56 @@
+id: CC018
+name: Restrict Plugin Marketplace Sources
+description: >
+  Ensures that strictKnownMarketplaces is explicitly configured in managed settings,
+  restricting which plugin marketplaces users can install from. Without this
+  setting, users can add plugins from any source — GitHub, npm, arbitrary URLs,
+  or local paths.
+
+scope:
+  - managed
+
+severity: CRITICAL
+
+threat: >
+  Plugin marketplaces distribute plugins that can bundle MCP servers, hooks,
+  custom agents, and slash commands — all of which run with full Claude Code
+  session authority. Without strictKnownMarketplaces, users can install plugins
+  from arbitrary sources including attacker-controlled URLs. PromptArmor's research
+  ("Hijacking Claude Code via Injected Marketplace Plugins") demonstrates that
+  malicious marketplace plugins are a primary supply-chain attack vector: a plugin
+  can silently add hooks that exfiltrate session data, MCP servers that intercept
+  tool calls, or custom commands that escalate privileges. Setting this to an
+  approved allowlist (or empty [] to block all marketplaces) closes this attack
+  surface.
+
+category: supply_chain
+
+check_type: config_set
+
+check_config:
+  key: strictKnownMarketplaces
+
+remediation: >
+  Deploy the following in your managed Claude Code settings. Use an empty array
+  to block all marketplace additions, or list approved sources:
+
+  To block all marketplace additions (most restrictive):
+    {
+      "strictKnownMarketplaces": []
+    }
+
+  To restrict to approved sources only:
+    {
+      "strictKnownMarketplaces": [
+        "https://marketplace.anthropic.com"
+      ]
+    }
+
+  This setting requires managed scope deployment and is intended for enterprise
+  environments where IT controls approved plugin sources.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://www.promptarmor.com/resources/hijacking-claude-code-via-injected-marketplace-plugins

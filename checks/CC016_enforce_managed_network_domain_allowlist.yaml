@@ -1,0 +1,51 @@
+id: CC016
+name: Enforce Managed Network Domain Allowlist
+description: >
+  Ensures that sandbox.network.allowManagedDomainsOnly is set to true in managed
+  settings. This prevents users and project configurations from extending the
+  sandbox network allowlist to arbitrary domains, closing a data exfiltration
+  bypass that would otherwise defeat network-level isolation.
+
+scope:
+  - managed
+
+severity: HIGH
+
+threat: >
+  Without sandbox.network.allowManagedDomainsOnly, users can add any domain to
+  the sandbox network allowlist through local or project settings, creating an
+  exfiltration path even when IT has restricted network egress via managed settings.
+  This is the network equivalent of allowManagedPermissionRulesOnly (CC003): just
+  as users could add broad permission allow rules, they can add broad network allow
+  rules. An attacker with access to project settings can add their own domain to
+  the allowlist and route exfiltrated data through it without triggering managed
+  network controls.
+
+category: sandbox
+
+check_type: config_value
+
+check_config:
+  key: sandbox.network.allowManagedDomainsOnly
+  expected_value: true
+
+remediation: >
+  Deploy the following in your managed Claude Code settings:
+
+    {
+      "sandbox": {
+        "network": {
+          "allowManagedDomainsOnly": true
+        }
+      }
+    }
+
+  Also configure sandbox.network.allowedDomains in managed settings with the
+  list of approved domains (see CC031). This setting requires managed scope
+  deployment — it has no effect at user or project scope.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/sandboxing

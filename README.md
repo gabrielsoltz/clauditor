@@ -63,6 +63,27 @@ Clauditor audits your Claude Code settings and repository configuration to detec
 | CC010 | Enable Bash Sandboxing | LOW | user, project, local, managed | Unrestricted shell access bypassing permission limits |
 | CC011 | Restrict Sandbox Filesystem Write Paths | MEDIUM | user, project, local, managed | Writes to /etc, /usr, ~/.ssh, ~/.aws enabling persistence |
 | CC012 | Restrict Sandbox Filesystem Read Paths | MEDIUM | user, project, local, managed | Exfiltration of SSH keys, cloud credentials, .env secrets |
+| CC013 | Block Sandbox Escape Hatch | HIGH | user, project, local, managed | Silent sandbox bypass via auto-retry of failed commands |
+| CC014 | Block Weaker Nested Sandbox Mode | HIGH | user, project, local, managed | Weakened bubblewrap isolation on Linux/WSL2 |
+| CC015 | Block Unrestricted Unix Socket Access in Sandbox | HIGH | user, project, local, managed | Docker socket access granting root-equivalent host control |
+| CC016 | Enforce Managed Network Domain Allowlist | HIGH | managed | Project settings bypassing IT network egress controls |
+| CC017 | Enforce Managed MCP Servers Only | HIGH | managed | Unauthorized MCP server injection via project/user settings |
+| CC018 | Restrict Plugin Marketplace Sources | CRITICAL | managed | Supply chain attacks via malicious marketplace plugins |
+| CC019 | Disable Remote Sessions | HIGH | managed | Remote takeover of local execution context via web interface |
+| CC020 | Enforce Stable Update Channel | MEDIUM | managed | Unreviewed Claude Code releases reaching developer fleet |
+| CC021 | Enforce Short Transcript Retention Period | MEDIUM | user, project, managed | Credential-containing session transcripts accumulating on disk |
+| CC022 | Block bypassPermissions as Default Mode | CRITICAL | managed | All permission checks disabled globally for every session |
+| CC023 | Restrict HTTP Hook Destination URLs | HIGH | managed | Session data exfiltration via unrestricted HTTP hook endpoints |
+| CC024 | Restrict Environment Variables Exposed to HTTP Hooks | HIGH | managed | Credential exfiltration via hook request headers |
+| CC025 | Deny Direct Read Access to .env and Secrets Files | HIGH | managed, project | .env reads bypassing .claudeignore restrictions |
+| CC026 | Deny Filesystem MCP Server | HIGH | managed, project | Filesystem MCP server bypassing permissions.deny rules |
+| CC027 | Block apiKeyHelper in Project and Local Scope | HIGH | project, local | Arbitrary shell execution on session start via committed config |
+| CC028 | Block otelHeadersHelper in Project and Local Scope | HIGH | project, local | Persistent periodic shell execution via committed config |
+| CC029 | Block Unrestricted Bash in Project Permissions Allow List | HIGH | project | Supply chain RCE via allow-all Bash rule in committed settings |
+| CC030 | CODEOWNERS Enforcement for .mcp.json | HIGH | repository | Unreviewed MCP server additions with full session authority |
+| CC031 | Configure Sandbox Network Domain Allowlist | HIGH | managed, project | Unrestricted sandbox network egress enabling data exfiltration |
+| CC032 | Disable Filesystem Server in MCP JSON Servers | MEDIUM | user, project, managed | Defense-in-depth block on high-risk filesystem MCP server |
+| CC033 | Block Unrestricted WebFetch in Permissions Allow List | MEDIUM | project, managed | Prompt injection via unrestricted web content fetching |
 
 ---
 

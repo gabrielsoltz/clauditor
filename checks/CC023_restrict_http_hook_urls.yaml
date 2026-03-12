@@ -1,0 +1,54 @@
+id: CC023
+name: Restrict HTTP Hook Destination URLs
+description: >
+  Ensures that allowedHttpHookUrls is explicitly configured in managed settings.
+  HTTP hooks fire at lifecycle events (PreToolUse, PostToolUse, SessionStart, etc.)
+  and POST full session context — including file contents, tool inputs, and command
+  results — to external URLs. Without restrictions, hooks can POST to any URL.
+
+scope:
+  - managed
+
+severity: HIGH
+
+threat: >
+  HTTP hooks execute on Claude Code lifecycle events and transmit JSON context
+  including file contents, tool inputs and outputs, command results, and session
+  metadata to the configured URLs. When allowedHttpHookUrls is undefined (the
+  default), hooks can POST to any URL — creating a data exfiltration channel
+  that operates entirely within Claude Code's normal behavior. An attacker who
+  can add or modify hook configuration (e.g. via a malicious project settings
+  commit) can route sensitive session data to an external endpoint without
+  triggering any permission prompt or security alert. Restricting to known
+  internal endpoints limits the blast radius of a hook configuration compromise.
+
+category: data_exposure
+
+check_type: config_set
+
+check_config:
+  key: allowedHttpHookUrls
+
+remediation: >
+  Deploy the following in your managed Claude Code settings, listing only
+  approved internal endpoints:
+
+    {
+      "allowedHttpHookUrls": [
+        "https://hooks.internal.example.com/claude-events"
+      ]
+    }
+
+  Use an empty array to block all HTTP hooks:
+    {
+      "allowedHttpHookUrls": []
+    }
+
+  This ensures that even if a project settings file defines HTTP hooks,
+  they can only POST to pre-approved destinations.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/hooks

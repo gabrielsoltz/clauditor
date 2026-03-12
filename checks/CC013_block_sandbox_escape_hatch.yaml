@@ -1,0 +1,51 @@
+id: CC013
+name: Block Sandbox Escape Hatch
+description: >
+  Ensures that sandbox.allowUnsandboxedCommands is explicitly set to false.
+  When enabled, Claude Code automatically retries any failed sandboxed command
+  without isolation, silently escaping the sandbox containment provided by CC010.
+
+scope:
+  - user
+  - project
+  - local
+  - managed
+
+severity: HIGH
+
+threat: >
+  When sandbox.allowUnsandboxedCommands is true (the default), a sandboxed
+  Bash command that fails for any reason is automatically retried outside the
+  sandbox without user notification. A prompt injection or a suppressed sandbox
+  failure can silently escape all OS-level isolation. This defeats the protection
+  of enabling sandbox.enabled (CC010) — the sandbox can be bypassed simply by
+  engineering a command failure. Combined with bypassPermissions, this completely
+  eliminates runtime isolation.
+
+category: sandbox
+
+check_type: config_value
+
+check_config:
+  key: sandbox.allowUnsandboxedCommands
+  expected_value: false
+
+remediation: >
+  Set sandbox.allowUnsandboxedCommands to false in the appropriate
+  Claude Code settings file:
+
+    {
+      "sandbox": {
+        "allowUnsandboxedCommands": false
+      }
+    }
+
+  This prevents silent sandbox escapes on command failure. Commands that
+  cannot run in the sandbox will fail explicitly rather than silently
+  retrying without isolation.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/sandboxing

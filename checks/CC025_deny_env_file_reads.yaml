@@ -1,0 +1,59 @@
+id: CC025
+name: Deny Direct Read Access to .env and Secrets Files
+description: >
+  Ensures that permissions.deny contains explicit Read rules for .env files and
+  secrets directories. This is distinct from CC004 (which covers Bash operations):
+  this check specifically targets the Read tool used by Claude to inspect file
+  contents. Reports confirm that .claudeignore does not reliably prevent Claude
+  from reading .env files.
+
+scope:
+  - managed
+  - project
+
+severity: HIGH
+
+threat: >
+  Claude's Read tool is the primary mechanism by which it inspects files in the
+  working directory. Without explicit Read deny rules, Claude can be instructed
+  — via prompt injection, a malicious CLAUDE.md, or a direct user request —
+  to read .env files, secrets directories, and credential files. Investigations
+  (The Register, January 2026) confirmed that .claudeignore and .gitignore do
+  NOT reliably prevent Claude Code from reading .env files; the only verified
+  mitigation is explicit permissions.deny rules. These Read deny rules complement
+  CC004's Bash-level protections by blocking the Read tool path specifically.
+
+category: permissions
+
+check_type: config_contains
+
+check_config:
+  key: permissions.deny
+  required_values:
+    - "Read(./.env)"
+    - "Read(./.env.*)"
+    - "Read(./secrets/**)"
+
+remediation: >
+  Add Read deny rules for sensitive file paths in the appropriate Claude Code
+  settings file:
+
+    {
+      "permissions": {
+        "deny": [
+          "Read(./.env)",
+          "Read(./.env.*)",
+          "Read(./secrets/**)"
+        ]
+      }
+    }
+
+  For managed settings, combine with CC004 entries for comprehensive coverage.
+  Add additional patterns as needed for your environment:
+    "Read(**/*.pem)", "Read(**/*.key)", "Read(~/.aws/credentials)"
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/permissions

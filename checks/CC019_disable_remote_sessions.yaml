@@ -1,0 +1,46 @@
+id: CC019
+name: Disable Remote Sessions
+description: >
+  Ensures that allow_remote_sessions is set to false in managed settings.
+  Remote Control sessions expose the full local Claude Code execution context —
+  filesystem, tools, MCP servers, and credentials — via a web interface.
+
+scope:
+  - managed
+
+severity: HIGH
+
+threat: >
+  Remote Control sessions allow Claude Code's local execution context to be
+  operated from a web interface, converting a local developer tool into a
+  privileged remote execution interface. Session URLs are difficult to keep
+  secret — they can appear in screenshots, support tickets, shared screens,
+  or be guessed. A hijacked session yields admin-like control over the
+  developer's machine: arbitrary file reads/writes, shell command execution,
+  and access to any credentials or secrets present in the development environment.
+  In environments where remote operation is not required, this capability should
+  be disabled at the managed level to prevent accidental or malicious exposure.
+
+category: access_control
+
+check_type: config_value
+
+check_config:
+  key: allow_remote_sessions
+  expected_value: false
+
+remediation: >
+  Deploy the following in your managed Claude Code settings:
+
+    {
+      "allow_remote_sessions": false
+    }
+
+  This disables the Remote Control feature for all users on the machine.
+  Only enable remote sessions in explicitly controlled environments where
+  access to the session URL is strictly managed.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings

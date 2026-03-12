@@ -1,0 +1,48 @@
+id: CC028
+name: Block otelHeadersHelper in Project and Local Scope
+description: >
+  Ensures that otelHeadersHelper is NOT present in project or local settings.
+  otelHeadersHelper runs a shell script at startup and periodically to generate
+  OpenTelemetry headers. Unlike apiKeyHelper (which runs once), this script
+  executes repeatedly throughout the session, creating a persistent shell
+  execution path in any committed configuration.
+
+scope:
+  - project
+  - local
+
+severity: HIGH
+
+threat: >
+  otelHeadersHelper executes a shell script both at session start and periodically
+  during the session to refresh OpenTelemetry authentication headers. When present
+  in project-committed settings, this means an arbitrary shell command runs
+  repeatedly for every developer using the project — without any permission prompt.
+  The periodic execution makes this more dangerous than apiKeyHelper: it can be
+  used to establish persistent callbacks to external infrastructure, poll for
+  commands, or exfiltrate session data at intervals throughout the developer's
+  work session. A malicious repository could use otelHeadersHelper to route
+  session telemetry (including tool inputs and outputs) to an attacker-controlled
+  OpenTelemetry endpoint.
+
+category: code_execution
+
+check_type: config_absent
+
+check_config:
+  key: otelHeadersHelper
+
+remediation: >
+  Remove otelHeadersHelper from .claude/settings.json and .claude/settings.local.json.
+  This setting should only be configured in user scope (~/.claude/settings.json)
+  or managed settings, where IT controls the telemetry destination and the script
+  content is reviewed.
+
+  If your organization requires centralized Claude Code telemetry, configure
+  otelHeadersHelper via managed settings deployment to ensure the destination
+  and script are IT-approved.
+
+fix_available: false
+
+references:
+  - https://code.claude.com/docs/en/settings
