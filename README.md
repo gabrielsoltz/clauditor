@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.png" alt="Clauditor" width="200">
+</p>
+
 # Clauditor
 
 **Security configuration scanner for Claude Code.**
