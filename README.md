@@ -30,7 +30,7 @@ Or from source:
 ```bash
 git clone https://github.com/gabrielsoltz/clauditor
 cd clauditor
-python3.12 -m venv .venv
+python3.13 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 ```
