@@ -3,12 +3,13 @@ name: Disable Bypass Permissions Mode
 description: >
   Ensures that the disableBypassPermissionsMode setting is explicitly set to
   "disable" across applicable Claude Code configuration scopes (user, project,
-  managed). This prevents users from launching Claude Code with the
+  local, managed). This prevents users from launching Claude Code with the
   --dangerously-skip-permissions flag, which bypasses all permission controls.
 
 scope:
   - user
   - project
+  - local
   - managed
 
 severity: CRITICAL
@@ -40,6 +41,11 @@ remediation: >
     }
 
   For project-level enforcement (.claude/settings.json):
+    {
+      "disableBypassPermissionsMode": "disable"
+    }
+
+  For local-only enforcement (.claude/settings.local.json):
     {
       "disableBypassPermissionsMode": "disable"
     }
