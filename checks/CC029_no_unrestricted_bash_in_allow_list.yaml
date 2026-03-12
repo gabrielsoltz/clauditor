@@ -1,0 +1,53 @@
+id: CC029
+name: Block Unrestricted Bash in Project Permissions Allow List
+description: >
+  Ensures that permissions.allow in project settings does NOT contain bare "Bash"
+  or "Bash(*)" entries. A project-committed allow rule for unrestricted Bash
+  pre-approves all shell command execution for every developer who opens the
+  repository, without any per-command prompt.
+
+scope:
+  - project
+
+severity: HIGH
+
+threat: >
+  A .claude/settings.json committed to a repository with "permissions": {"allow":
+  ["Bash"]} or ["Bash(*)"]} silently pre-approves every shell command for every
+  developer who opens the repository. This is a supply-chain attack vector: a
+  malicious commit adds an allow-all Bash rule, and subsequent Claude Code sessions
+  can execute any shell command without prompting the user. This bypasses the
+  normal human approval step for destructive or dangerous operations. Unlike
+  CC002 (which blocks --dangerously-skip-permissions), this uses the legitimate
+  permission allow mechanism but in an unsafe way. A specific Bash allow rule
+  like "Bash(npm run build:*)" is acceptable; bare "Bash" is not.
+
+category: permissions
+
+check_type: config_not_contains
+
+check_config:
+  key: permissions.allow
+  forbidden_values:
+    - "Bash"
+    - "Bash(*)"
+
+remediation: >
+  Remove bare Bash allow rules from .claude/settings.json. Replace overly broad
+  rules with specific command patterns:
+
+  Instead of:
+    { "permissions": { "allow": ["Bash"] } }
+
+  Use specific patterns:
+    { "permissions": { "allow": ["Bash(npm run *)", "Bash(make *)", "Bash(pytest *)"] } }
+
+  If broad Bash access is required for a CI workflow, use the
+  --dangerously-skip-permissions flag scoped to that specific workflow
+  rather than committing a broad allow rule to the repository.
+
+fix_available: false
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/permissions

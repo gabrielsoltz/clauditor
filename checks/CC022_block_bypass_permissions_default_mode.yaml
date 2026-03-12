@@ -1,0 +1,52 @@
+id: CC022
+name: Block bypassPermissions as Default Mode
+description: >
+  Ensures that permissions.defaultMode is explicitly set to "default" in managed
+  settings, preventing any scope from setting bypassPermissions as the default mode.
+  The bypassPermissions mode disables all permission checks for every tool, equivalent
+  to running with --dangerously-skip-permissions on every session.
+
+scope:
+  - managed
+
+severity: CRITICAL
+
+threat: >
+  permissions.defaultMode controls the permission enforcement mode for all tool
+  calls. When set to "bypassPermissions", all tool permission checks are silently
+  disabled for every session — equivalent to --dangerously-skip-permissions applied
+  globally. This is distinct from CC002 (which blocks the CLI flag) because
+  defaultMode in settings applies to all sessions, including non-interactive CI runs,
+  without any visible warning. The official docs warn: "Only use bypassPermissions
+  in isolated environments like containers or VMs." Setting it as the default mode
+  in any shared or project-committed settings file is a critical misconfiguration
+  that removes all permission guardrails organization-wide.
+
+category: permissions
+
+check_type: config_value
+
+check_config:
+  key: permissions.defaultMode
+  expected_value: "default"
+
+remediation: >
+  Deploy the following in your managed Claude Code settings to explicitly enforce
+  the safe default mode:
+
+    {
+      "permissions": {
+        "defaultMode": "default"
+      }
+    }
+
+  Never set permissions.defaultMode to "bypassPermissions" in managed, project,
+  or user settings. If you need bypass mode for an isolated CI environment,
+  use the --dangerously-skip-permissions CLI flag scoped to that specific workflow
+  rather than setting it globally.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/permissions

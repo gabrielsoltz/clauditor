@@ -1,0 +1,53 @@
+id: CC015
+name: Block Unrestricted Unix Socket Access in Sandbox
+description: >
+  Ensures that sandbox.network.allowAllUnixSockets is explicitly set to false.
+  Allowing all Unix domain sockets gives sandboxed Bash commands access to
+  /var/run/docker.sock, which grants root-equivalent control over the host system.
+
+scope:
+  - user
+  - project
+  - local
+  - managed
+
+severity: HIGH
+
+threat: >
+  When sandbox.network.allowAllUnixSockets is true, sandboxed Bash commands can
+  communicate over any Unix domain socket — including /var/run/docker.sock. Access
+  to the Docker socket is equivalent to root access on the host system: it allows
+  spawning privileged containers, mounting host filesystems, and escaping all
+  container isolation. The official sandboxing documentation explicitly warns:
+  "if it is used to allow access to /var/run/docker.sock this would effectively
+  grant access to the host system." This setting should never be enabled in
+  project-committed configuration.
+
+category: sandbox
+
+check_type: config_value
+
+check_config:
+  key: sandbox.network.allowAllUnixSockets
+  expected_value: false
+
+remediation: >
+  Set sandbox.network.allowAllUnixSockets to false (or remove the key) in
+  the appropriate Claude Code settings file:
+
+    {
+      "sandbox": {
+        "network": {
+          "allowAllUnixSockets": false
+        }
+      }
+    }
+
+  If access to specific Unix sockets is required, use sandbox.network.allowedUnixSockets
+  to allowlist individual paths rather than enabling unrestricted access.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/sandboxing

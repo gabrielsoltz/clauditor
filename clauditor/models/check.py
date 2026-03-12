@@ -24,6 +24,10 @@ class CheckType(StrEnum):
     CONFIG_VALUE = "config_value"  # Check a key/value in a JSON settings file
     CONFIG_CONTAINS = "config_contains"  # Check a key (list) contains all required values
     CONFIG_SET = "config_set"  # Check a key is present and non-empty (any truthy value)
+    CONFIG_ABSENT = "config_absent"  # Check a key is NOT present (dangerous keys in project/local)
+    CONFIG_NOT_CONTAINS = (
+        "config_not_contains"  # Check a key (list) does NOT contain forbidden values
+    )
     FILE_CONTENT = "file_content"  # Check content inside a file
     FILE_EXISTS = "file_exists"  # Check that a file exists
 

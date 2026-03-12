@@ -1,0 +1,47 @@
+id: CC027
+name: Block apiKeyHelper in Project and Local Scope
+description: >
+  Ensures that apiKeyHelper is NOT present in project or local settings.
+  apiKeyHelper executes an arbitrary shell script on every session start to
+  generate API authentication values. When present in project-committed settings,
+  it means a shell command runs for every developer who opens the repository.
+
+scope:
+  - project
+  - local
+
+severity: HIGH
+
+threat: >
+  apiKeyHelper is a shell command that executes on every Claude Code session
+  start to dynamically generate the API key. Its output is sent as X-Api-Key
+  and Authorization: Bearer headers to the Anthropic API. When this is set in
+  .claude/settings.json (committed to git), it means an arbitrary shell command
+  runs automatically when any developer opens the project — without any permission
+  prompt, because it fires before the session permission system is initialized.
+  This is the same attack pattern as the SessionStart hook RCE demonstrated in
+  CVE-2025-59536: a malicious repository could use apiKeyHelper to establish
+  persistence or exfiltrate credentials on first open. This setting should only
+  exist in user scope (~/.claude/settings.json) or managed settings, never in
+  project-committed files.
+
+category: code_execution
+
+check_type: config_absent
+
+check_config:
+  key: apiKeyHelper
+
+remediation: >
+  Remove apiKeyHelper from .claude/settings.json and .claude/settings.local.json.
+  This setting should only be configured in user scope (~/.claude/settings.json)
+  or managed settings, where it reflects an individual's or IT's deliberate
+  authentication configuration rather than a project-imposed shell execution.
+
+  If you need a shared API key helper for the team, configure it via managed
+  settings using IT deployment rather than committing it to the repository.
+
+fix_available: false
+
+references:
+  - https://code.claude.com/docs/en/settings

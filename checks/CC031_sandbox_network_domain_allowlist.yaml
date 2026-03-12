@@ -1,0 +1,55 @@
+id: CC031
+name: Configure Sandbox Network Domain Allowlist
+description: >
+  Ensures that sandbox.network.allowedDomains is explicitly configured with a
+  non-empty list. When undefined, sandboxed Bash commands can reach any network
+  destination, allowing data exfiltration even with sandbox filesystem isolation
+  enabled.
+
+scope:
+  - managed
+  - project
+
+severity: HIGH
+
+threat: >
+  When sandbox.network.allowedDomains is undefined (the default), sandboxed Bash
+  commands have unrestricted network egress. This means that even with sandbox
+  filesystem isolation enabled (CC010, CC011, CC012), a compromised command can
+  exfiltrate sensitive files, credentials, or session data to any external server.
+  The official sandboxing documentation notes: "Without network isolation, a
+  compromised agent could exfiltrate sensitive files like SSH keys." This check
+  ensures that a network domain allowlist exists — complementing CC016
+  (allowManagedDomainsOnly) which enforces that the managed list is authoritative.
+
+category: sandbox
+
+check_type: config_set
+
+check_config:
+  key: sandbox.network.allowedDomains
+
+remediation: >
+  Configure an explicit domain allowlist in the appropriate Claude Code settings:
+
+    {
+      "sandbox": {
+        "network": {
+          "allowedDomains": [
+            "api.anthropic.com",
+            "registry.npmjs.org",
+            "pypi.org"
+          ]
+        }
+      }
+    }
+
+  Include only the domains genuinely required for development tasks. For managed
+  settings, combine with sandbox.network.allowManagedDomainsOnly: true (CC016)
+  to ensure this list is the authoritative allowlist.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/sandboxing

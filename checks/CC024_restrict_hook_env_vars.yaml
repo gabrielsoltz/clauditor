@@ -1,0 +1,53 @@
+id: CC024
+name: Restrict Environment Variables Exposed to HTTP Hooks
+description: >
+  Ensures that httpHookAllowedEnvVars is explicitly configured in managed settings.
+  HTTP hooks can interpolate environment variables into request headers. Without
+  an explicit allowlist, any environment variable — including cloud credentials
+  and API keys — can be sent to hook URLs.
+
+scope:
+  - managed
+
+severity: HIGH
+
+threat: >
+  HTTP hooks can reference environment variables when constructing request headers,
+  allowing secrets from the developer's environment to be transmitted to hook
+  endpoints. When httpHookAllowedEnvVars is undefined, there is no restriction on
+  which environment variables can be included — meaning AWS_SECRET_ACCESS_KEY,
+  GITHUB_TOKEN, ANTHROPIC_API_KEY, DATABASE_URL, and similar secrets present in
+  the shell environment can be sent to any configured hook URL. If an attacker
+  can modify hook configuration (via project settings) and the allowedHttpHookUrls
+  restriction is not in place (CC023), this creates a direct credential exfiltration
+  path from the developer's environment to an attacker-controlled endpoint.
+
+category: data_exposure
+
+check_type: config_set
+
+check_config:
+  key: httpHookAllowedEnvVars
+
+remediation: >
+  Deploy the following in your managed Claude Code settings. Use an empty array
+  to prevent any environment variable from being sent to hooks, or provide an
+  explicit allowlist:
+
+  To block all env var injection (most restrictive):
+    {
+      "httpHookAllowedEnvVars": []
+    }
+
+  To allow only specific non-sensitive vars:
+    {
+      "httpHookAllowedEnvVars": ["HOOK_AUTH_TOKEN", "ENVIRONMENT_NAME"]
+    }
+
+  Never add credential-bearing environment variable names to this list.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/hooks

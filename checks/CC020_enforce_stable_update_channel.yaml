@@ -1,0 +1,47 @@
+id: CC020
+name: Enforce Stable Update Channel
+description: >
+  Ensures that autoUpdatesChannel is set to "stable" in managed settings.
+  The "latest" channel (default) installs the most recent release immediately,
+  which may include regressions or unpatched security issues before they are
+  caught by regression filtering.
+
+scope:
+  - managed
+
+severity: MEDIUM
+
+threat: >
+  The "latest" update channel installs new Claude Code releases as soon as they
+  are published. For organizations managing Claude Code at scale, uncontrolled
+  updates introduce supply-chain risk: a compromised release or a release with
+  a security regression affects all users simultaneously before IT can review
+  the changes. The "stable" channel is approximately one week behind latest and
+  has passed additional regression filtering. Pre-patch versions of Claude Code
+  (e.g. before CVE-2025-59536 fixes) demonstrate that version control matters —
+  enterprises should control the update channel centrally to ensure consistent,
+  reviewed versions across the fleet.
+
+category: supply_chain
+
+check_type: config_value
+
+check_config:
+  key: autoUpdatesChannel
+  expected_value: "stable"
+
+remediation: >
+  Deploy the following in your managed Claude Code settings:
+
+    {
+      "autoUpdatesChannel": "stable"
+    }
+
+  The "stable" channel provides a tested, regression-filtered release stream
+  approximately one week behind "latest". This gives IT teams time to review
+  changes before they reach the developer fleet.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings

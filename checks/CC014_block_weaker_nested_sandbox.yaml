@@ -1,0 +1,53 @@
+id: CC014
+name: Block Weaker Nested Sandbox Mode
+description: >
+  Ensures that sandbox.enableWeakerNestedSandbox is explicitly set to false.
+  The official Claude Code documentation explicitly labels this mode a
+  "SECURITY RISK" that "considerably weakens security" by reducing bubblewrap
+  isolation on Linux and WSL2.
+
+scope:
+  - user
+  - project
+  - local
+  - managed
+
+severity: HIGH
+
+threat: >
+  sandbox.enableWeakerNestedSandbox is designed for running Claude Code inside
+  Docker containers without privileged namespaces, but achieves this by
+  substantially weakening bubblewrap sandbox isolation. The official sandboxing
+  documentation explicitly warns this is a security risk. If this is enabled in
+  project or user settings outside of a controlled Docker environment, it silently
+  degrades the sandbox protection for all sessions, allowing broader filesystem
+  and process access than intended. An attacker who can influence project settings
+  can use this to pre-weaken the sandbox before executing a prompt injection.
+
+category: sandbox
+
+check_type: config_value
+
+check_config:
+  key: sandbox.enableWeakerNestedSandbox
+  expected_value: false
+
+remediation: >
+  Set sandbox.enableWeakerNestedSandbox to false (or remove the key entirely)
+  in the appropriate Claude Code settings file:
+
+    {
+      "sandbox": {
+        "enableWeakerNestedSandbox": false
+      }
+    }
+
+  Only enable this setting when running inside a Docker container that cannot
+  support privileged namespaces, and only at the user scope — never in
+  project-committed settings.
+
+fix_available: true
+
+references:
+  - https://code.claude.com/docs/en/settings
+  - https://code.claude.com/docs/en/sandboxing
