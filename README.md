@@ -89,11 +89,31 @@ Clauditor audits your Claude Code settings and repository configuration to detec
 
 ## Installation
 
+The recommended way to install Clauditor is with [pipx](https://pipx.pypa.io), which installs CLI tools in isolated environments and makes them available system-wide:
+
 ```bash
+pipx install clauditor
+```
+
+Install pipx if you don't have it yet:
+
+```bash
+# macOS
+brew install pipx && pipx ensurepath
+
+# Linux / WSL
+python3 -m pip install --user pipx && pipx ensurepath
+```
+
+**Alternative — pip inside a virtual environment:**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install clauditor
 ```
 
-Or from source:
+**From source:**
 
 ```bash
 git clone https://github.com/gabrielsoltz/clauditor

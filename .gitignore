@@ -38,3 +38,6 @@ dmypy.json
 
 # Claude Code — local settings are personal and should never be committed
 .claude/settings.local.json
+
+# macOS
+.DS_Store
