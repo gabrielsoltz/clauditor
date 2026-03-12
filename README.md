@@ -23,6 +23,7 @@ Clauditor audits your Claude Code settings and repository configuration to detec
 - [Enforcing a Minimum Scope](#--base-level-enforcing-a-minimum-scope)
 - [Check Format](#check-format)
 - [Built-in Checks](#built-in-checks)
+- [Generating a Settings File](#generating-a-settings-file)
 - [Adding a Custom Check](#adding-a-custom-check)
 - [Architecture](#architecture)
 - [License](#license)
@@ -95,6 +96,21 @@ clauditor scan --exit-code
 
 # List all available checks
 clauditor list-checks
+
+# Generate a user settings file covering user-scoped checks (default)
+clauditor generate
+
+# Generate a project-level settings file (.claude/settings.json)
+clauditor generate --scope project
+
+# Generate only for critical checks
+clauditor generate --severity CRITICAL
+
+# Generate for specific checks
+clauditor generate --checks CC002,CC010,CC011
+
+# Write directly to a file
+clauditor generate --scope managed -o managed-settings.json
 ```
 
 ---
@@ -300,6 +316,65 @@ references:
 
 ---
 
+## Generating a Settings File
+
+`clauditor generate` produces a ready-to-deploy JSON settings file containing all the values needed to remediate the applicable checks.
+
+```bash
+clauditor generate                          # All checks → managed settings
+clauditor generate --scope project         # Project-level (.claude/settings.json)
+clauditor generate --severity CRITICAL     # Only critical checks
+clauditor generate --checks CC002,CC010    # Specific checks only
+clauditor generate -o managed-settings.json
+```
+
+**Scope controls which checks are included:**
+
+| `--scope` | Checks included |
+|-----------|----------------|
+| `user` (default) | user-scoped checks only |
+| `project` | project + user checks |
+| `local` | local + project + user checks |
+| `managed` | All config checks: managed + local + project + user |
+
+**What gets generated:**
+- `config_value` checks → sets the key to its required value
+- `config_contains` checks → builds/merges the required list entries (e.g. multiple checks writing to `permissions.deny` are merged automatically)
+- `config_set` checks → **skipped** (e.g. `forceLoginOrgUUID` requires your org-specific UUID; reported separately)
+- `file_content` / `file_exists` checks → **skipped** (repository governance files, not settings values)
+
+**Example output** (`clauditor generate --scope managed`):
+
+```json
+{
+  "disableBypassPermissionsMode": "disable",
+  "allowManagedPermissionRulesOnly": true,
+  "permissions": {
+    "deny": [
+      "Read(.env)",
+      "Read(**/.env)",
+      "Read(secrets/**)",
+      "Write(secrets/**)",
+      "Read(**/credentials)",
+      "Bash(curl:*)",
+      "Bash(wget:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": false,
+  "allowManagedHooksOnly": true,
+  "forceLoginMethod": "claudeai",
+  "sandbox": {
+    "enabled": true,
+    "filesystem": {
+      "denyWrite": ["/etc", "/usr", "~/.ssh", "~/.aws"],
+      "denyRead": ["~/.ssh", "~/.aws/credentials", ".env", "**/.env"]
+    }
+  }
+}
+```
+
+---
+
 ## Adding a Custom Check
 
 1. Create a new YAML file in `checks/` following the format above.
@@ -319,6 +394,7 @@ clauditor/
 ├── scanner.py          # Orchestrates checks against providers
 ├── loader.py           # YAML check loader with Pydantic validation
 ├── aggregator.py       # Scope precedence + base_level logic
+├── generator.py        # Settings file generator
 ├── models/
 │   ├── check.py        # Check, Scope, Severity, CheckType models
 │   └── finding.py      # Finding, FindingStatus models
