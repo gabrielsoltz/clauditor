@@ -9,6 +9,9 @@ on:
     # Run weekly on Monday at 08:00 UTC to catch newly disclosed vulnerabilities
     - cron: "0 8 * * 1"
 
+permissions:
+  contents: read
+
 jobs:
   bandit:
     name: Bandit (SAST)
