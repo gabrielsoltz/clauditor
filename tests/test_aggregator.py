@@ -96,3 +96,58 @@ class TestAggregateMultiScope:
         findings = [make_finding(severity=Severity.CRITICAL, scope=Scope.PROJECT)]
         results = aggregate(findings)
         assert results[0].severity == Severity.CRITICAL
+
+
+class TestAggregateBaseLevel:
+    def test_user_pass_meets_default_base_level(self) -> None:
+        """Default base_level=user: a user-scope PASS is sufficient."""
+        findings = [
+            make_finding(status=FindingStatus.SKIPPED, scope=Scope.MANAGED),
+            make_finding(status=FindingStatus.SKIPPED, scope=Scope.PROJECT),
+            make_finding(status=FindingStatus.PASS, scope=Scope.USER),
+        ]
+        results = aggregate(findings)
+        assert results[0].effective_status == FindingStatus.PASS
+
+    def test_user_pass_fails_project_base_level(self) -> None:
+        """base_level=project: user-only PASS is insufficient → effective FAIL."""
+        findings = [
+            make_finding(status=FindingStatus.SKIPPED, scope=Scope.MANAGED),
+            make_finding(status=FindingStatus.SKIPPED, scope=Scope.PROJECT),
+            make_finding(status=FindingStatus.PASS, scope=Scope.USER),
+        ]
+        results = aggregate(findings, base_level=Scope.PROJECT)
+        assert results[0].effective_status == FindingStatus.FAIL
+
+    def test_project_pass_meets_project_base_level(self) -> None:
+        findings = [
+            make_finding(status=FindingStatus.SKIPPED, scope=Scope.MANAGED),
+            make_finding(status=FindingStatus.PASS, scope=Scope.PROJECT),
+            make_finding(status=FindingStatus.PASS, scope=Scope.USER),
+        ]
+        results = aggregate(findings, base_level=Scope.PROJECT)
+        assert results[0].effective_status == FindingStatus.PASS
+
+    def test_managed_pass_meets_managed_base_level(self) -> None:
+        findings = [
+            make_finding(status=FindingStatus.PASS, scope=Scope.MANAGED),
+            make_finding(status=FindingStatus.SKIPPED, scope=Scope.PROJECT),
+        ]
+        results = aggregate(findings, base_level=Scope.MANAGED)
+        assert results[0].effective_status == FindingStatus.PASS
+
+    def test_project_pass_fails_managed_base_level(self) -> None:
+        """base_level=managed: only managed-level PASS counts."""
+        findings = [
+            make_finding(status=FindingStatus.SKIPPED, scope=Scope.MANAGED),
+            make_finding(status=FindingStatus.PASS, scope=Scope.PROJECT),
+        ]
+        results = aggregate(findings, base_level=Scope.MANAGED)
+        assert results[0].effective_status == FindingStatus.FAIL
+
+    def test_managed_pass_always_meets_any_base_level(self) -> None:
+        """managed is highest precedence — satisfies any base_level."""
+        findings = [make_finding(status=FindingStatus.PASS, scope=Scope.MANAGED)]
+        for level in [Scope.USER, Scope.PROJECT, Scope.LOCAL, Scope.MANAGED]:
+            results = aggregate(findings, base_level=level)
+            assert results[0].effective_status == FindingStatus.PASS

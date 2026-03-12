@@ -6,8 +6,11 @@ from typing import Annotated
 import typer
 
 from clauditor import __version__
+from clauditor.models.check import Scope
 from clauditor.output.console import print_banner, print_findings, print_summary
 from clauditor.scanner import run_scan
+
+_VALID_BASE_LEVELS: list[Scope] = [Scope.USER, Scope.PROJECT, Scope.LOCAL, Scope.MANAGED]
 
 app = typer.Typer(
     name="clauditor",
@@ -88,6 +91,18 @@ def scan(
         bool,
         typer.Option("--exit-code", help="Exit with code 1 if any FAIL findings are found."),
     ] = False,
+    base_level: Annotated[
+        str,
+        typer.Option(
+            "--base-level",
+            help=(
+                "Minimum scope required for a check to PASS. "
+                "Options: user, project, local, managed. "
+                "Default: user (any passing scope counts). "
+                "Use 'project' to require team-wide enforcement."
+            ),
+        ),
+    ] = "user",
 ) -> None:
     """
     Scan Claude Code security configurations.
@@ -127,6 +142,17 @@ def scan(
     scope_filter = [s.strip() for s in scope.split(",")] if scope else None
 
     try:
+        base_level_scope = Scope(base_level.lower())
+    except ValueError:
+        valid = ", ".join(s.value for s in _VALID_BASE_LEVELS)
+        typer.echo(f"Error: --base-level must be one of: {valid}", err=True)
+        raise typer.Exit(1)
+    if base_level_scope not in _VALID_BASE_LEVELS:
+        valid = ", ".join(s.value for s in _VALID_BASE_LEVELS)
+        typer.echo(f"Error: --base-level must be one of: {valid}", err=True)
+        raise typer.Exit(1)
+
+    try:
         findings = run_scan(
             repo_root=repo_root,
             repo_url=repo_url,
@@ -139,8 +165,8 @@ def scan(
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
 
-    print_findings(findings, verbose=verbose)
-    print_summary(findings)
+    print_findings(findings, verbose=verbose, base_level=base_level_scope)
+    print_summary(findings, base_level=base_level_scope)
 
     if exit_code:
         from clauditor.models.finding import FindingStatus
