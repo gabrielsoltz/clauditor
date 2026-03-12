@@ -2,7 +2,30 @@
 
 **Security configuration scanner for Claude Code.**
 
+[![Tests](https://github.com/gabrielsoltz/clauditor/actions/workflows/test.yml/badge.svg)](https://github.com/gabrielsoltz/clauditor/actions/workflows/test.yml)
+[![Security](https://github.com/gabrielsoltz/clauditor/actions/workflows/security.yml/badge.svg)](https://github.com/gabrielsoltz/clauditor/actions/workflows/security.yml)
+[![Lint](https://github.com/gabrielsoltz/clauditor/actions/workflows/lint.yml/badge.svg)](https://github.com/gabrielsoltz/clauditor/actions/workflows/lint.yml)
+[![PyPI](https://img.shields.io/pypi/v/clauditor)](https://pypi.org/project/clauditor/)
+[![Python](https://img.shields.io/pypi/pyversions/clauditor)](https://pypi.org/project/clauditor/)
+[![License](https://img.shields.io/github/license/gabrielsoltz/clauditor)](LICENSE)
+
 Clauditor audits your Claude Code settings and repository configuration to detect security misconfigurations.
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration Scopes](#configuration-scopes)
+- [How Findings Work](#how-findings-work)
+- [Enforcing a Minimum Scope](#--base-level-enforcing-a-minimum-scope)
+- [Check Format](#check-format)
+- [Built-in Checks](#built-in-checks)
+- [Adding a Custom Check](#adding-a-custom-check)
+- [Architecture](#architecture)
+- [License](#license)
 
 ---
 
@@ -222,7 +245,7 @@ threat: >
 
 category: access_control
 
-check_type: file_content  # config_value | file_content | file_exists
+check_type: file_content  # config_value | config_contains | config_set | file_content | file_exists
 
 check_config:
   search_paths:
@@ -304,9 +327,11 @@ clauditor/
 │   ├── config_provider.py   # User, Project, Local, Managed providers
 │   └── repository_provider.py  # Repository file provider + git clone
 ├── checkers/
-│   ├── config_value.py  # Logic for config_value checks
-│   ├── file_content.py  # Logic for file_content checks
-│   └── file_exists.py   # Logic for file_exists checks
+│   ├── config_value.py     # Logic for config_value checks
+│   ├── config_contains.py  # Logic for config_contains checks
+│   ├── config_set.py       # Logic for config_set checks
+│   ├── file_content.py     # Logic for file_content checks
+│   └── file_exists.py      # Logic for file_exists checks
 └── output/
     └── console.py       # Rich terminal output
 
