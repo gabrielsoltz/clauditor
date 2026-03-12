@@ -10,6 +10,14 @@ from clauditor.aggregator import COVERED, NA, aggregate
 from clauditor.models.check import Scope, Severity
 from clauditor.models.finding import Finding, FindingStatus
 
+_SCOPE_INITIALS = {
+    Scope.MANAGED: "M",
+    Scope.LOCAL: "L",
+    Scope.PROJECT: "P",
+    Scope.USER: "U",
+    Scope.REPOSITORY: "R",
+}
+
 console = Console()
 
 _SEVERITY_COLORS = {
@@ -74,12 +82,14 @@ def print_banner() -> None:
     console.print()
 
 
-def print_findings(findings: list[Finding], verbose: bool = False) -> None:
+def print_findings(
+    findings: list[Finding], verbose: bool = False, base_level: Scope = Scope.USER
+) -> None:
     if not findings:
         console.print("[green]No findings to display.[/green]")
         return
 
-    results = aggregate(findings)
+    results = aggregate(findings, base_level=base_level)
 
     # Determine which scope columns are actually used across all checks
     active_scopes = [s for s in _SCOPE_COLUMN_ORDER if any(s in r.scope_findings for r in results)]
@@ -96,8 +106,7 @@ def print_findings(findings: list[Finding], verbose: bool = False) -> None:
     table.add_column("Severity", no_wrap=True, width=9)
     table.add_column("Status", no_wrap=True, width=10)
     for scope in active_scopes:
-        # Single-char header abbreviation keeps scope columns narrow (3 chars)
-        table.add_column(_SCOPE_LABELS[scope][:4], no_wrap=True, width=3, justify="center")
+        table.add_column(_SCOPE_INITIALS[scope], no_wrap=True, width=3, justify="center")
 
     for r in results:
         sev_color = _SEVERITY_COLORS.get(r.severity, "white")
@@ -122,11 +131,10 @@ def print_findings(findings: list[Finding], verbose: bool = False) -> None:
 
     if active_scopes:
         scope_names = "  ".join(
-            f"[dim]{_SCOPE_LABELS[s][:4]}[/dim]=[dim]{_SCOPE_LABELS[s]}[/dim]"
-            for s in active_scopes
+            f"[dim]{_SCOPE_INITIALS[s]}[/dim]=[dim]{_SCOPE_LABELS[s]}[/dim]" for s in active_scopes
         )
         console.print(
-            f"[dim]Scope columns: {scope_names}[/dim]  "
+            f"[dim]Scopes: {scope_names}[/dim]  "
             "[bold green]✔[/bold green][dim]=pass[/dim]  "
             "[bold red]✘[/bold red][dim]=fail[/dim]  "
             "[dim green]↑[/dim green][dim]=covered by higher scope[/dim]  "
@@ -148,10 +156,10 @@ def print_findings(findings: list[Finding], verbose: bool = False) -> None:
                         console.print(f"  • {ref}")
 
 
-def print_summary(findings: list[Finding]) -> None:
+def print_summary(findings: list[Finding], base_level: Scope = Scope.USER) -> None:
     console.print()
 
-    results = aggregate(findings)
+    results = aggregate(findings, base_level=base_level)
     total = len(results)
 
     by_status: dict[str, int] = {}

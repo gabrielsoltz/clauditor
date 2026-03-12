@@ -55,10 +55,17 @@ class CheckResult:
     fail_finding: Finding | None = None
 
 
-def aggregate(findings: list[Finding]) -> list[CheckResult]:
+def aggregate(findings: list[Finding], base_level: Scope = Scope.USER) -> list[CheckResult]:
     """
     Group findings by check_id, apply scope precedence, and return one
     CheckResult per check in the original check order.
+
+    Args:
+        findings:   Flat list of per-(check, scope) findings.
+        base_level: Minimum scope level required for a check to be PASS.
+                    If the setting is only configured below this level, the
+                    effective status is FAIL even if the scope itself passes.
+                    Default: USER (any passing scope counts).
     """
     # Group by check_id, preserving insertion order
     groups: dict[str, CheckResult] = {}
@@ -73,12 +80,12 @@ def aggregate(findings: list[Finding]) -> list[CheckResult]:
         groups[f.check_id].scope_findings[f.scope] = f
 
     for result in groups.values():
-        _apply_precedence(result)
+        _apply_precedence(result, base_level)
 
     return list(groups.values())
 
 
-def _apply_precedence(result: CheckResult) -> None:
+def _apply_precedence(result: CheckResult, base_level: Scope = Scope.USER) -> None:
     """Mutate result in-place: fill scope_display and set effective_status."""
     findings = result.scope_findings
 
@@ -131,6 +138,21 @@ def _apply_precedence(result: CheckResult) -> None:
                 covered = True
 
     result.effective_status = effective_status
+
+    # Apply base_level requirement: if the effective scope has lower precedence
+    # than base_level, the setting isn't enforced at the required level → FAIL.
+    if (
+        result.effective_status == FindingStatus.PASS
+        and effective_finding is not None
+        and effective_finding.scope in CONFIG_SCOPE_PRECEDENCE
+        and base_level in CONFIG_SCOPE_PRECEDENCE
+    ):
+        eff_idx = CONFIG_SCOPE_PRECEDENCE.index(effective_finding.scope)
+        base_idx = CONFIG_SCOPE_PRECEDENCE.index(base_level)
+        if eff_idx > base_idx:
+            result.effective_status = FindingStatus.FAIL
+            if result.fail_finding is None:
+                result.fail_finding = effective_finding
 
     # If effective is PASS and it came from a non-repository scope,
     # also ensure any repository result doesn't override the overall status

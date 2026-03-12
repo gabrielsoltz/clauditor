@@ -35,6 +35,7 @@ class TestLoadBuiltinChecks:
         assert cc002.check_type == CheckType.CONFIG_VALUE
         assert Scope.USER in cc002.scope
         assert Scope.PROJECT in cc002.scope
+        assert Scope.LOCAL in cc002.scope
         assert Scope.MANAGED in cc002.scope
         assert cc002.check_config["key"] == "disableBypassPermissionsMode"
         assert cc002.check_config["expected_value"] == "disable"
