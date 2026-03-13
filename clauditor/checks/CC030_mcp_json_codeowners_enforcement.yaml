@@ -1,10 +1,10 @@
 id: CC030
 name: CODEOWNERS Enforcement for .mcp.json
 description: >
-  Ensures that .mcp.json has a CODEOWNERS entry requiring security team review.
-  .mcp.json defines MCP servers shared with all project contributors — any
-  change to it should require security oversight to prevent supply chain attacks
-  via unauthorized MCP server additions.
+  Ensures that .mcp.json has a CODEOWNERS entry with at least one assigned
+  owner. .mcp.json defines MCP servers shared with all project contributors —
+  any change to it must require review from someone other than the PR author
+  to prevent supply chain attacks via unauthorized MCP server additions.
 
 scope:
   - repository
@@ -16,10 +16,13 @@ threat: >
   project contributors. MCP servers run as local processes with full Claude session
   authority: file access, network calls, tool execution, and shell commands. Without
   CODEOWNERS enforcement, any contributor with write access can add a malicious MCP
-  server to .mcp.json without security review. CVE-2025-59536 demonstrated that MCP
-  server definitions in project files are a primary supply chain attack vector — an
-  attacker can add a server that intercepts tool calls, exfiltrates session data,
-  or executes arbitrary code on every developer's machine when they open the project.
+  server to .mcp.json without anyone else's approval — the PR author could merge
+  their own change. CVE-2025-59536 demonstrated that MCP server definitions in
+  project files are a primary supply chain attack vector — an attacker can add a
+  server that intercepts tool calls, exfiltrates session data, or executes arbitrary
+  code on every developer's machine when they open the project. CODEOWNERS prevents
+  self-approval of changes to this file by requiring a designated reviewer who is
+  not the PR author to approve before merging.
 
 category: supply_chain
 
@@ -33,20 +36,22 @@ check_config:
     - docs/CODEOWNERS
   required_entries:
     - pattern: ".mcp.json"
-      owner: "@security-team"
 
 remediation: >
   Add the following entry to your CODEOWNERS file
-  (CODEOWNERS, .github/CODEOWNERS, .gitlab/CODEOWNERS, or docs/CODEOWNERS):
+  (CODEOWNERS, .github/CODEOWNERS, .gitlab/CODEOWNERS, or docs/CODEOWNERS),
+  replacing @your-security-team with your organization's actual team handle:
 
-    .mcp.json @security-team
+    .mcp.json @your-security-team
 
-  Replace @security-team with your organization's actual security team
-  GitHub/GitLab handle. This will require security team approval on any
-  pull request that adds or modifies the .mcp.json file.
+  The assigned owner must be a team or individual who is not the typical
+  author of MCP configuration changes. Also consider protecting the MCP
+  configuration directory:
 
-  Also consider adding entries for any MCP configuration directories:
-    /.mcp/ @security-team
+    /.mcp/ @your-security-team
+
+  Enable the "Require review from Code Owners" branch protection rule to
+  ensure this CODEOWNERS entry is enforced on every pull request.
 
 fix_available: true
 

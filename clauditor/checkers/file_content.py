@@ -34,7 +34,7 @@ def _entry_present(content: str, pattern: str, owner: str | None) -> bool:
         owners = parts[1:] if len(parts) > 1 else []
         if file_pattern == pattern:
             if owner is None:
-                return True
+                return len(owners) > 0  # pattern must have at least one owner assigned
             if any(o.lower() == owner.lower() for o in owners):
                 return True
     return False
