@@ -1,0 +1,60 @@
+id: CC049
+name: Block sandbox.excludedCommands in Project and Local Scope
+description: >
+  Ensures that sandbox.excludedCommands is NOT set in project or local
+  settings. This key defines commands that run outside the sandbox entirely,
+  bypassing all filesystem and network restrictions. Committing it to a
+  shared repository allows project settings to carve named escape hatches
+  out of the sandbox for every contributor.
+
+scope:
+  - project
+  - local
+
+severity: MEDIUM
+
+threat: >
+  sandbox.excludedCommands is an explicit sandbox escape hatch: any command
+  listed here runs with full unsandboxed access to the filesystem and network,
+  bypassing sandbox.filesystem.denyWrite, sandbox.filesystem.denyRead, and
+  sandbox.network.allowedDomains controls. When set in .claude/settings.json
+  (committed to git), an attacker who can modify project settings can add
+  arbitrary commands to this list, granting them unsandboxed execution on
+  every contributor's machine. This is distinct from
+  sandbox.allowUnsandboxedCommands (CC013), which controls whether the escape
+  hatch feature exists at all — sandbox.excludedCommands controls which
+  specific commands use it. Both must be controlled. sandbox.excludedCommands
+  should only appear in user scope (individual opt-in for known-safe tools)
+  or managed scope (IT-controlled exceptions with documented justification).
+
+category: sandbox
+
+check_type: config_absent
+
+check_config:
+  key: sandbox.excludedCommands
+
+remediation: >
+  Remove sandbox.excludedCommands from .claude/settings.json and
+  .claude/settings.local.json.
+
+  If specific commands require unsandboxed execution (e.g., a corporate
+  VPN tool or hardware security key daemon), configure the exception in
+  user scope (~/.claude/settings.json) for individual opt-in, or in
+  managed settings with an explicit documented justification:
+
+    Managed settings:
+    {
+      "sandbox": {
+        "excludedCommands": ["/usr/local/bin/corp-vpn-helper"]
+      }
+    }
+
+  Prefer resolving the underlying requirement (e.g., granting the sandbox
+  access to the specific socket or path) over excluding the command entirely.
+
+fix_available: false
+
+references:
+  - https://managed-settings.com/
+  - https://code.claude.com/docs/en/settings

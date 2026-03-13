@@ -1,0 +1,55 @@
+id: CC047
+name: Restrict Available Models in Managed Scope
+description: >
+  Ensures that availableModels is set in managed settings. Without this
+  restriction, users can switch to any Claude model via /model, --model,
+  config, or the ANTHROPIC_MODEL environment variable, including models
+  that may not comply with organizational policy, data handling agreements,
+  or safety requirements.
+
+scope:
+  - managed
+
+severity: MEDIUM
+
+threat: >
+  Without availableModels configured in managed settings, developers can
+  freely switch between any Claude model available to their account. This
+  creates several risks: (1) compliance — certain models may not be covered
+  by the organization's data processing agreement or BAA; (2) cost control —
+  unrestricted model selection allows switching to more expensive models;
+  (3) policy — some models may have different capability profiles that bypass
+  organizational guardrails; (4) audit — if different developers use different
+  models, telemetry and audit logs become inconsistent and harder to analyze.
+  availableModels in managed settings is the only mechanism that enforces
+  model selection at the fleet level via ANTHROPIC_MODEL, --model, /model,
+  and Config UI simultaneously.
+
+category: access_control
+
+check_type: config_set
+
+check_config:
+  key: availableModels
+
+remediation: >
+  Set availableModels in managed settings to an explicit list of approved
+  model identifiers. Only include models that are covered by your
+  organization's data processing agreement and security policy:
+
+    {
+      "availableModels": [
+        "claude-opus-4-5",
+        "claude-sonnet-4-5",
+        "claude-haiku-4-5"
+      ]
+    }
+
+  Consult your Anthropic account team to confirm which model IDs are
+  available under your subscription and DPA.
+
+fix_available: false
+
+references:
+  - https://managed-settings.com/
+  - https://code.claude.com/docs/en/settings

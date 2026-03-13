@@ -1,0 +1,56 @@
+id: CC050
+name: Configure OTLP Traces Exporter in Managed Scope
+description: >
+  Ensures that OTEL_TRACES_EXPORTER is set to "otlp" in managed settings.
+  Traces capture the full request lifecycle — including which tools were
+  called, in what order, and how long each took. Without trace export,
+  the telemetry pipeline is incomplete even when metrics and logs are
+  configured.
+
+scope:
+  - managed
+
+severity: LOW
+
+threat: >
+  When OTEL_TRACES_EXPORTER is not set to "otlp", Claude Code distributed
+  traces are not forwarded to the OTLP collector. Traces provide span-level
+  visibility into each Claude Code session: the sequence of tool calls,
+  parent-child relationships between operations, latency per step, and
+  error propagation. Without traces, security teams lack the execution
+  flow context needed to reconstruct a full session timeline during incident
+  response — for example, determining whether a suspicious bash command was
+  part of a legitimate workflow or an anomalous execution chain. Completing
+  the metrics + logs + traces OTEL pipeline (CC040, CC041, CC050) provides
+  the full observability signal needed for both operational monitoring and
+  security forensics.
+
+category: observability
+
+check_type: config_value
+
+check_config:
+  key: env.OTEL_TRACES_EXPORTER
+  expected_value: "otlp"
+
+remediation: >
+  Add OTEL_TRACES_EXPORTER to the env block in managed settings alongside
+  the full telemetry configuration:
+
+    {
+      "env": {
+        "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+        "OTEL_METRICS_EXPORTER": "otlp",
+        "OTEL_LOGS_EXPORTER": "otlp",
+        "OTEL_TRACES_EXPORTER": "otlp",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector.internal.example.com:4317"
+      }
+    }
+
+fix_available: false
+
+references:
+  - https://managed-settings.com/
+  - https://code.claude.com/docs/en/monitoring-usage
+  - https://code.claude.com/docs/en/settings

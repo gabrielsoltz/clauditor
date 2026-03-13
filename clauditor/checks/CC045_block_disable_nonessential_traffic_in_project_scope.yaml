@@ -1,0 +1,53 @@
+id: CC045
+name: Block CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC in Project and Local Scope
+description: >
+  Ensures that CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC is NOT set in project
+  or local settings via the env key. This variable disables the autoupdater,
+  bug reporting, error reporting, and telemetry simultaneously. Setting it in
+  committed project settings silently kills all organizational visibility for
+  every contributor.
+
+scope:
+  - project
+  - local
+
+severity: MEDIUM
+
+threat: >
+  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 is a single switch that disables
+  four independent systems: the autoupdater (leaving developers on potentially
+  vulnerable versions), bug reporting (hiding crashes from operations teams),
+  error reporting via Sentry (removing anomaly signals), and all telemetry
+  (undoing CC038–CC041 managed monitoring controls). When committed to
+  .claude/settings.json, this takes effect for every contributor silently.
+  An attacker who can modify project settings can use this to suppress
+  detection signals before or during a supply chain attack — ensuring that
+  malicious tool invocations, abnormal session patterns, and error spikes
+  never reach the organization's monitoring infrastructure. It also prevents
+  security patches from being applied via the autoupdater, extending the
+  window of exposure for known vulnerabilities.
+
+category: observability
+
+check_type: config_absent
+
+check_config:
+  key: env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC
+
+remediation: >
+  Remove CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC from the env block in
+  .claude/settings.json and .claude/settings.local.json.
+
+  If specific subsystems need to be disabled for operational reasons, use
+  the individual env variables in managed scope with explicit justification:
+  - DISABLE_AUTOUPDATER=1 (autoupdater only)
+  - DISABLE_TELEMETRY=1 (Statsig telemetry only)
+  - DISABLE_ERROR_REPORTING=1 (Sentry only)
+
+  Never commit blanket traffic suppression to a shared repository.
+
+fix_available: false
+
+references:
+  - https://managed-settings.com/
+  - https://code.claude.com/docs/en/settings

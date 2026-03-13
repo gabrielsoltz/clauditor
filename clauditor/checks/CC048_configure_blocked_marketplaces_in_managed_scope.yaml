@@ -1,0 +1,55 @@
+id: CC048
+name: Configure Blocked Marketplaces in Managed Scope
+description: >
+  Ensures that blockedMarketplaces is set in managed settings. While
+  strictKnownMarketplaces (CC018) enforces an allowlist of approved plugin
+  sources, blockedMarketplaces adds an explicit denylist layer. Configuring
+  both provides defense in depth for plugin supply chain security.
+
+scope:
+  - managed
+
+severity: MEDIUM
+
+threat: >
+  Plugin marketplaces are a supply chain attack surface: a malicious or
+  compromised marketplace can distribute plugins that exfiltrate code,
+  inject prompt overrides, or establish persistence. CC018 (strictKnownMarketplaces)
+  restricts which marketplaces are trusted, but blockedMarketplaces provides
+  an additional explicit denylist that is checked before any network or
+  filesystem operation involving plugin sources. Without blockedMarketplaces,
+  there is no defense-in-depth: if strictKnownMarketplaces is misconfigured
+  or bypassed, no secondary control prevents installation from known-bad
+  sources. Maintaining an explicit blocklist of untrusted or known-malicious
+  marketplaces is a recognized supply chain hardening practice (analogous to
+  npm/PyPI package blocklists) and is documented as a managed-settings-only
+  control.
+
+category: supply_chain
+
+check_type: config_set
+
+check_config:
+  key: blockedMarketplaces
+
+remediation: >
+  Set blockedMarketplaces in managed settings to an explicit list of
+  marketplace sources that should never be trusted, including any
+  non-official or unvetted plugin repositories:
+
+    {
+      "blockedMarketplaces": [
+        "untrusted-registry.example.com",
+        "community-plugins.example.org"
+      ]
+    }
+
+  Review and update this list regularly as new marketplace sources emerge.
+  Pair with strictKnownMarketplaces (CC018) for full allowlist+denylist
+  coverage.
+
+fix_available: false
+
+references:
+  - https://managed-settings.com/
+  - https://code.claude.com/docs/en/settings

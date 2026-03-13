@@ -1,0 +1,53 @@
+id: CC044
+name: Disable Weaker Network Isolation
+description: >
+  Ensures that sandbox.enableWeakerNetworkIsolation is NOT set to true.
+  The official documentation explicitly labels this setting as one that
+  "reduces security". It allows sandboxed processes to access the system
+  TLS trust service on macOS, weakening network-level sandbox isolation.
+
+scope:
+  - user
+  - project
+  - local
+  - managed
+
+severity: HIGH
+
+threat: >
+  sandbox.enableWeakerNetworkIsolation relaxes the macOS network sandbox by
+  granting sandboxed Claude Code processes access to the system TLS trust
+  service. While this is sometimes required for corporate certificate
+  authorities, it widens the sandbox attack surface: a compromised or
+  malicious tool running inside Claude Code gains additional network
+  primitives that the default sandbox denies. When set in project-committed
+  settings, this weakened configuration applies to every contributor
+  automatically. The Claude Code documentation explicitly warns that this
+  setting "reduces security" — any deployment that enables it without a
+  documented operational requirement is accepting unnecessary risk. The
+  safe default is false (not set).
+
+category: sandbox
+
+check_type: config_value
+
+check_config:
+  key: sandbox.enableWeakerNetworkIsolation
+  expected_value: false
+
+remediation: >
+  Remove sandbox.enableWeakerNetworkIsolation or set it to false in all
+  settings files (.claude/settings.json, .claude/settings.local.json,
+  ~/.claude/settings.json, and managed settings).
+
+  If this setting was enabled to support a corporate certificate authority,
+  consider configuring the CA at the OS level instead (Keychain on macOS,
+  system trust store on Linux) so that the sandbox does not need to be
+  weakened. Only enable this setting in managed scope with a documented
+  exception and compensating controls.
+
+fix_available: false
+
+references:
+  - https://managed-settings.com/
+  - https://code.claude.com/docs/en/settings
