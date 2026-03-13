@@ -1,0 +1,51 @@
+id: CC039
+name: Configure OTLP Endpoint in Managed Scope
+description: >
+  Ensures that OTEL_EXPORTER_OTLP_ENDPOINT is set in managed settings.
+  Without an endpoint, telemetry data has nowhere to go even if
+  CLAUDE_CODE_ENABLE_TELEMETRY is enabled. This check verifies that
+  organizations have configured a destination for their telemetry pipeline.
+
+scope:
+  - managed
+
+severity: MEDIUM
+
+threat: >
+  If CLAUDE_CODE_ENABLE_TELEMETRY is enabled but OTEL_EXPORTER_OTLP_ENDPOINT is
+  not set, Claude Code telemetry is silently dropped — the data is collected but
+  never delivered to any collector. Organizations lose the operational visibility
+  they intended to gain: no session metadata, no token usage data, no tool call
+  logs, and no anomaly detection signal. A missing endpoint is a silent failure
+  that leaves security teams without the data needed to detect misuse, credential
+  leakage via prompts, or policy violations.
+
+category: observability
+
+check_type: config_set
+
+check_config:
+  key: env.OTEL_EXPORTER_OTLP_ENDPOINT
+
+remediation: >
+  Set OTEL_EXPORTER_OTLP_ENDPOINT in managed settings to point to your internal
+  OTLP collector (e.g. OpenTelemetry Collector, Grafana Alloy, Datadog Agent):
+
+    {
+      "env": {
+        "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+        "OTEL_METRICS_EXPORTER": "otlp",
+        "OTEL_LOGS_EXPORTER": "otlp",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector.internal.example.com:4317"
+      }
+    }
+
+  Use an internal-only endpoint. Never point to a third-party or
+  externally-hosted collector that your organization does not control.
+
+fix_available: false
+
+references:
+  - https://code.claude.com/docs/en/monitoring-usage
+  - https://code.claude.com/docs/en/settings

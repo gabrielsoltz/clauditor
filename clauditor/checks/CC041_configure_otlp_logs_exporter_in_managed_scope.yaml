@@ -1,0 +1,49 @@
+id: CC041
+name: Configure OTLP Logs Exporter in Managed Scope
+description: >
+  Ensures that OTEL_LOGS_EXPORTER is set to "otlp" in managed settings.
+  This directs Claude Code log events (tool calls, bash commands, file paths,
+  session events) to the configured OTLP collector. Without this, log-level
+  telemetry is not exported even when telemetry is enabled.
+
+scope:
+  - managed
+
+severity: LOW
+
+threat: >
+  When OTEL_LOGS_EXPORTER is not set to "otlp", Claude Code log events are not
+  forwarded to the OTLP collector. Log events contain the most operationally
+  valuable security data: tool invocation records with parameters, bash commands
+  executed, file paths accessed, git SHAs, and (if OTEL_LOG_USER_PROMPTS=1)
+  prompt content. Without log export, security teams cannot audit what commands
+  Claude was asked to run, cannot detect prompt injection attempts via log
+  anomalies, and cannot perform post-incident forensics on a compromised
+  developer session.
+
+category: observability
+
+check_type: config_value
+
+check_config:
+  key: env.OTEL_LOGS_EXPORTER
+  expected_value: "otlp"
+
+remediation: >
+  Add OTEL_LOGS_EXPORTER to the env block in managed settings:
+
+    {
+      "env": {
+        "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+        "OTEL_METRICS_EXPORTER": "otlp",
+        "OTEL_LOGS_EXPORTER": "otlp",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector.internal.example.com:4317"
+      }
+    }
+
+fix_available: false
+
+references:
+  - https://code.claude.com/docs/en/monitoring-usage
+  - https://code.claude.com/docs/en/settings
