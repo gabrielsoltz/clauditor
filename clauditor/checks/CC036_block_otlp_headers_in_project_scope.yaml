@@ -1,0 +1,60 @@
+id: CC036
+name: Block OTLP Credentials in Project and Local Scope
+description: >
+  Ensures that OTEL_EXPORTER_OTLP_HEADERS is NOT set in project or local
+  settings via the env key. This variable carries authentication credentials
+  (Bearer tokens, API keys) for the OTLP collector. Committing credentials to
+  a shared repository exposes them to all contributors and version control history.
+
+scope:
+  - project
+  - local
+
+severity: HIGH
+
+threat: >
+  OTEL_EXPORTER_OTLP_HEADERS contains authentication headers sent to the OTLP
+  collector, typically in the form "Authorization=Bearer <token>" or
+  "api-key=<value>". When set in .claude/settings.json (committed to git), these
+  credentials are exposed to every contributor with repository access and are
+  permanently recorded in git history — even if the file is later modified.
+  Exposed collector credentials allow an attacker to: (1) send forged telemetry
+  to corrupt monitoring data; (2) read existing telemetry if the collector API
+  supports it; (3) pivot to other services if the credential is shared across
+  systems. Credentials for telemetry infrastructure should only be configured
+  via managed settings (IT-deployed) or otelHeadersHelper in user/managed scope
+  for dynamic credential generation.
+
+category: data_exposure
+
+check_type: config_absent
+
+check_config:
+  key: env.OTEL_EXPORTER_OTLP_HEADERS
+
+remediation: >
+  Remove OTEL_EXPORTER_OTLP_HEADERS from the env block in .claude/settings.json
+  and .claude/settings.local.json. Rotate any exposed credentials immediately.
+
+  For dynamic credential management, use otelHeadersHelper in managed settings
+  (not project scope) to generate credentials at runtime without committing them:
+
+    Managed settings:
+    {
+      "otelHeadersHelper": "/usr/local/bin/generate-otel-headers.sh"
+    }
+
+  For static credentials, configure OTEL_EXPORTER_OTLP_HEADERS only in
+  managed settings deployed via MDM/configuration management:
+
+    {
+      "env": {
+        "OTEL_EXPORTER_OTLP_HEADERS": "Authorization=Bearer <token>"
+      }
+    }
+
+fix_available: false
+
+references:
+  - https://code.claude.com/docs/en/monitoring-usage
+  - https://code.claude.com/docs/en/settings

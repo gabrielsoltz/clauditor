@@ -1,0 +1,61 @@
+id: CC037
+name: Block CLAUDE_CODE_ENABLE_TELEMETRY in Project and Local Scope
+description: >
+  Ensures that CLAUDE_CODE_ENABLE_TELEMETRY is NOT set in project or local
+  settings via the env key. This is the master switch for all Claude Code
+  OpenTelemetry data collection. Enabling it in project-committed settings
+  activates telemetry for all contributors without individual consent.
+
+scope:
+  - project
+  - local
+
+severity: MEDIUM
+
+threat: >
+  CLAUDE_CODE_ENABLE_TELEMETRY=1 is the master switch that activates all OTEL
+  data collection. When set in .claude/settings.json (committed to git), it
+  silently enables telemetry for every developer who works on the project —
+  regardless of their personal preferences and without requiring them to opt in.
+  Telemetry includes session metadata, user email, account UUID, token usage,
+  cost in USD, tool permission decisions, and (with additional flags) bash
+  commands and file paths. Even if the endpoint is internal, forcing telemetry
+  collection on contributors without their knowledge raises consent and privacy
+  concerns. Telemetry enablement should be an individual opt-in (user scope)
+  or an explicitly communicated IT policy (managed scope), never a silent
+  project-level default.
+
+category: data_exposure
+
+check_type: config_absent
+
+check_config:
+  key: env.CLAUDE_CODE_ENABLE_TELEMETRY
+
+remediation: >
+  Remove CLAUDE_CODE_ENABLE_TELEMETRY from the env block in .claude/settings.json
+  and .claude/settings.local.json.
+
+  If organization-wide telemetry collection is required, enable it exclusively
+  via managed settings (IT-deployed) with a clearly communicated policy and
+  an internal-only OTLP endpoint:
+
+    Managed settings:
+    {
+      "env": {
+        "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+        "OTEL_METRICS_EXPORTER": "otlp",
+        "OTEL_LOGS_EXPORTER": "otlp",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector.internal.example.com:4317"
+      }
+    }
+
+  Individual contributors who wish to enable personal telemetry should do so
+  in their own user scope (~/.claude/settings.json).
+
+fix_available: false
+
+references:
+  - https://code.claude.com/docs/en/monitoring-usage
+  - https://code.claude.com/docs/en/settings

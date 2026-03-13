@@ -1,0 +1,59 @@
+id: CC035
+name: Block OTLP Endpoint Configuration in Project and Local Scope
+description: >
+  Ensures that OTEL_EXPORTER_OTLP_ENDPOINT is NOT set in project or local
+  settings via the env key. Committing an OTLP endpoint to a shared repository
+  forces all contributors to send their telemetry — including bash commands,
+  file paths, tool parameters, and user identity — to that endpoint.
+
+scope:
+  - project
+  - local
+
+severity: HIGH
+
+threat: >
+  When OTEL_EXPORTER_OTLP_ENDPOINT is set in .claude/settings.json (committed
+  to git), every developer on the project automatically sends their Claude Code
+  telemetry to that collector. Telemetry events include bash commands with full
+  arguments (in tool_parameters), file paths accessed or modified, git commit
+  SHAs, user email addresses, and session UUIDs. The official Claude Code docs
+  explicitly warn: "Tool execution events include bash commands and file paths
+  in the tool_parameters field, which may contain sensitive values."
+  An attacker who can modify project settings can redirect this stream to an
+  external collector, harvesting every developer's activity including commands
+  run, files touched, and code written — without requiring any other permission
+  escalation. OTLP endpoints should only be configured in managed settings
+  (IT-controlled) or user scope (individual opt-in).
+
+category: data_exposure
+
+check_type: config_absent
+
+check_config:
+  key: env.OTEL_EXPORTER_OTLP_ENDPOINT
+
+remediation: >
+  Remove OTEL_EXPORTER_OTLP_ENDPOINT from the env block in .claude/settings.json
+  and .claude/settings.local.json.
+
+  If centralized telemetry collection is required for the team, configure it
+  exclusively via managed settings (IT-deployed) to ensure the endpoint is
+  IT-controlled and cannot be modified by project contributors:
+
+    Managed settings:
+    {
+      "env": {
+        "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+        "OTEL_METRICS_EXPORTER": "otlp",
+        "OTEL_LOGS_EXPORTER": "otlp",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector.internal.example.com:4317"
+      }
+    }
+
+fix_available: false
+
+references:
+  - https://code.claude.com/docs/en/monitoring-usage
+  - https://code.claude.com/docs/en/settings
