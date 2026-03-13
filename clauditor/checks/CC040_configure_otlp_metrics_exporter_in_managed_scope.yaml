@@ -1,0 +1,47 @@
+id: CC040
+name: Configure OTLP Metrics Exporter in Managed Scope
+description: >
+  Ensures that OTEL_METRICS_EXPORTER is set to "otlp" in managed settings.
+  This directs Claude Code metrics (token usage, cost, session counts) to the
+  configured OTLP collector. Without this setting, metrics are not exported
+  even when telemetry is enabled.
+
+scope:
+  - managed
+
+severity: LOW
+
+threat: >
+  When OTEL_METRICS_EXPORTER is not set to "otlp", Claude Code metrics are not
+  forwarded to the OTLP collector. Organizations lose visibility into aggregate
+  usage metrics: token consumption per user, estimated cost in USD, number of
+  sessions, and tool invocation counts. These metrics are essential for capacity
+  planning, budget management, and detecting anomalous usage spikes that may
+  indicate a compromised developer account or runaway automation.
+
+category: observability
+
+check_type: config_value
+
+check_config:
+  key: env.OTEL_METRICS_EXPORTER
+  expected_value: "otlp"
+
+remediation: >
+  Add OTEL_METRICS_EXPORTER to the env block in managed settings:
+
+    {
+      "env": {
+        "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+        "OTEL_METRICS_EXPORTER": "otlp",
+        "OTEL_LOGS_EXPORTER": "otlp",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector.internal.example.com:4317"
+      }
+    }
+
+fix_available: false
+
+references:
+  - https://code.claude.com/docs/en/monitoring-usage
+  - https://code.claude.com/docs/en/settings

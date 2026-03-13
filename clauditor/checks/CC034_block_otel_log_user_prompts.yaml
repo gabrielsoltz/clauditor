@@ -1,0 +1,58 @@
+id: CC034
+name: Block OTEL_LOG_USER_PROMPTS in Project and Local Scope
+description: >
+  Ensures that OTEL_LOG_USER_PROMPTS is NOT set to "1" in project or local
+  settings via the env key. When enabled, Claude Code includes the full content
+  of every user prompt in telemetry log events. In project-committed settings,
+  this forces prompt content collection for all contributors without their
+  knowledge.
+
+scope:
+  - project
+  - local
+
+severity: HIGH
+
+threat: >
+  When OTEL_LOG_USER_PROMPTS=1 is set in .claude/settings.json (committed to git),
+  every developer who works on the project has their full prompt text — including
+  pasted code, business logic, internal architecture descriptions, and accidentally
+  included secrets — exported to the configured OTLP endpoint on every Claude
+  interaction. By default, prompt content is redacted from telemetry (only the
+  length is recorded). Enabling this in project-committed settings silently
+  bypasses that privacy protection for all contributors. If combined with an
+  external or attacker-controlled OTLP endpoint (CC035), this becomes a full
+  prompt content exfiltration channel. This setting should only ever be enabled
+  deliberately in user or managed scope by an individual or IT team who controls
+  the telemetry destination.
+
+category: data_exposure
+
+check_type: config_absent
+
+check_config:
+  key: env.OTEL_LOG_USER_PROMPTS
+
+remediation: >
+  Remove OTEL_LOG_USER_PROMPTS from the env block in .claude/settings.json
+  and .claude/settings.local.json.
+
+  If prompt-level telemetry is required for debugging, configure it in user scope
+  (~/.claude/settings.json) for individual opt-in, or in managed settings with a
+  controlled, internal-only OTLP endpoint:
+
+    {
+      "env": {
+        "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+        "OTEL_LOG_USER_PROMPTS": "1",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector.internal.example.com:4317"
+      }
+    }
+
+  Never commit this configuration to a shared repository.
+
+fix_available: false
+
+references:
+  - https://code.claude.com/docs/en/monitoring-usage
+  - https://code.claude.com/docs/en/settings

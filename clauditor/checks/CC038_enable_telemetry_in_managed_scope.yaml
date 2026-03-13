@@ -1,0 +1,53 @@
+id: CC038
+name: Enable Telemetry in Managed Scope
+description: >
+  Ensures that CLAUDE_CODE_ENABLE_TELEMETRY is set to "1" in managed settings.
+  This is the master switch for all Claude Code OpenTelemetry data collection.
+  Organizations that deploy managed settings should enable telemetry to gain
+  visibility into Claude Code usage across their fleet.
+
+scope:
+  - managed
+
+severity: MEDIUM
+
+threat: >
+  Without CLAUDE_CODE_ENABLE_TELEMETRY=1 in managed settings, organizations have
+  no visibility into how Claude Code is being used across their environment.
+  Blind spots include: which tools are being called, which external endpoints are
+  being accessed, how many tokens are consumed per user, and what commands Claude
+  is being asked to run. This lack of visibility makes it impossible to detect
+  misuse, policy violations, prompt injection attempts, or abnormal behavior
+  patterns. For organizations with security or compliance requirements, telemetry
+  is a foundational control — not an optional enhancement.
+
+category: observability
+
+check_type: config_value
+
+check_config:
+  key: env.CLAUDE_CODE_ENABLE_TELEMETRY
+  expected_value: "1"
+
+remediation: >
+  Add CLAUDE_CODE_ENABLE_TELEMETRY to the env block in managed settings alongside
+  a configured OTLP collector endpoint:
+
+    {
+      "env": {
+        "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+        "OTEL_METRICS_EXPORTER": "otlp",
+        "OTEL_LOGS_EXPORTER": "otlp",
+        "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector.internal.example.com:4317"
+      }
+    }
+
+  Deploy via MDM or configuration management tooling so the setting applies to
+  all developer machines uniformly.
+
+fix_available: false
+
+references:
+  - https://code.claude.com/docs/en/monitoring-usage
+  - https://code.claude.com/docs/en/settings
