@@ -1,0 +1,48 @@
+id: CC051
+name: Block DISABLE_ERROR_REPORTING in Project and Local Scope
+description: >
+  Ensures that DISABLE_ERROR_REPORTING is NOT set in project or local
+  settings via the env key. This variable disables Sentry-based error
+  reporting. When committed to project settings, it suppresses crash and
+  error signals for all contributors, reducing operational visibility and
+  hiding anomalous behavior from security teams.
+
+scope:
+  - project
+  - local
+
+severity: LOW
+
+threat: >
+  DISABLE_ERROR_REPORTING=1 disables the Sentry error reporting pipeline
+  in Claude Code. When set in .claude/settings.json (committed to git),
+  this takes effect for every developer on the project. Error reporting
+  is a secondary observability channel: crash reports and unhandled
+  exceptions can surface unexpected behavior caused by malformed inputs,
+  injection attempts, or bugs in tools that Claude Code is executing.
+  Suppressing this signal makes it harder to detect patterns of abnormal
+  usage across the contributor fleet. While less critical than telemetry
+  (CC046) or the full traffic kill switch (CC045), blanket suppression
+  of error signals in project-committed settings is an unnecessary reduction
+  in visibility with no operational justification for shared repository use.
+
+category: observability
+
+check_type: config_absent
+
+check_config:
+  key: env.DISABLE_ERROR_REPORTING
+
+remediation: >
+  Remove DISABLE_ERROR_REPORTING from the env block in .claude/settings.json
+  and .claude/settings.local.json.
+
+  If individual developers need to opt out of error reporting for privacy
+  reasons, they should do so in their own user scope (~/.claude/settings.json).
+  Do not commit this setting to a shared repository.
+
+fix_available: false
+
+references:
+  - https://managed-settings.com/
+  - https://code.claude.com/docs/en/settings

@@ -1,0 +1,55 @@
+id: CC042
+name: Block awsAuthRefresh in Project and Local Scope
+description: >
+  Ensures that awsAuthRefresh is NOT set in project or local settings.
+  This key points to a custom script that modifies the ~/.aws directory
+  to refresh AWS credentials. Committing it to a shared repository means
+  an attacker-controlled script runs silently and modifies AWS credentials
+  for every contributor.
+
+scope:
+  - project
+  - local
+
+severity: HIGH
+
+threat: >
+  awsAuthRefresh specifies a script path that Claude Code executes to refresh
+  AWS credentials by writing to the ~/.aws directory. When committed to
+  .claude/settings.json, this script runs automatically for every developer
+  who clones the repository — without requiring any explicit approval beyond
+  the initial project settings trust decision. An attacker who can modify
+  project settings can point awsAuthRefresh at a malicious script that
+  exfiltrates existing AWS credentials, overwrites them with attacker-controlled
+  values, or establishes persistent access to the developer's AWS environment.
+  This is a direct credential theft and account takeover vector. AWS credential
+  scripts must only be configured in user scope (individual opt-in) or managed
+  scope (IT-controlled), never committed to a shared repository.
+
+category: data_exposure
+
+check_type: config_absent
+
+check_config:
+  key: awsAuthRefresh
+
+remediation: >
+  Remove awsAuthRefresh from .claude/settings.json and .claude/settings.local.json.
+
+  If AWS credential refresh is required, configure it in user scope
+  (~/.claude/settings.json) for individual opt-in, or in managed settings
+  deployed via MDM/configuration management:
+
+    Managed settings:
+    {
+      "awsAuthRefresh": "/usr/local/bin/refresh-aws-credentials.sh"
+    }
+
+  Ensure the script path points to an IT-controlled, audited binary and
+  never to a path within the project repository itself.
+
+fix_available: false
+
+references:
+  - https://managed-settings.com/
+  - https://code.claude.com/docs/en/settings

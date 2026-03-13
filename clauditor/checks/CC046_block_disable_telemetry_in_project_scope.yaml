@@ -1,0 +1,48 @@
+id: CC046
+name: Block DISABLE_TELEMETRY in Project and Local Scope
+description: >
+  Ensures that DISABLE_TELEMETRY is NOT set in project or local settings
+  via the env key. This variable opts out of Statsig tracking for Claude
+  Code. When committed to project settings, it silently disables telemetry
+  collection for all contributors, undermining organizational monitoring
+  controls configured in managed settings.
+
+scope:
+  - project
+  - local
+
+severity: MEDIUM
+
+threat: >
+  DISABLE_TELEMETRY=1 opts Claude Code out of Statsig-based telemetry
+  collection. When set in .claude/settings.json (committed to git), it
+  suppresses telemetry for every developer on the project regardless of what
+  the managed settings configure via CLAUDE_CODE_ENABLE_TELEMETRY (CC038).
+  This creates a conflict where IT has deployed telemetry enforcement at the
+  managed level, but project-committed settings silently override the outcome.
+  From a threat perspective, disabling telemetry removes the signal needed to
+  detect anomalous Claude Code usage patterns, prompt injection attempts, and
+  unauthorized tool invocations. Combined with CC045, it can be used to
+  establish a detection-blind environment from within the project repository.
+
+category: observability
+
+check_type: config_absent
+
+check_config:
+  key: env.DISABLE_TELEMETRY
+
+remediation: >
+  Remove DISABLE_TELEMETRY from the env block in .claude/settings.json
+  and .claude/settings.local.json.
+
+  Individual developers who need to opt out of telemetry for personal reasons
+  should do so in their own user scope (~/.claude/settings.json), not in
+  shared project settings. Organizational telemetry policy should be enforced
+  exclusively via managed settings.
+
+fix_available: false
+
+references:
+  - https://managed-settings.com/
+  - https://code.claude.com/docs/en/settings
