@@ -20,6 +20,8 @@ Clauditor audits your Claude Code settings and repository configuration to detec
 ## Table of Contents
 
 - [Features](#features)
+- [Why This Matters — For Developers](#why-this-matters--for-developers)
+- [Why This Matters — For Security Teams](#why-this-matters--for-security-teams)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration Scopes](#configuration-scopes)
@@ -35,16 +37,51 @@ Clauditor audits your Claude Code settings and repository configuration to detec
 
 ## Features
 
-- Scans all Claude Code configuration scopes: **user**, **project**, **local**, and **managed**
+- Scans Claude Code configuration at every scope: **user**, **project**, **local**, and **managed**
+- **50+ built-in security checks**, ready to use with no configuration — each with a severity rating, a documented attack scenario, step-by-step remediation, and external references
 - Checks **repository-level files** (CODEOWNERS, CLAUDE.md, etc.)
 - Checks are defined as **YAML files** — easy to read, extend, and contribute
 - Each check maps to a concrete **threat**, **severity**, and **remediation**
 - Scan a **local path**, a **remote git URL**, or just the current directory
+- **Generate a hardened settings file** with `clauditor generate`: produces a ready-to-deploy JSON file that remediates all applicable checks for your chosen scope (user, project, or managed)
 - Rich terminal output with optional verbose remediation steps
-- CI-friendly `--exit-code` flag
-- `--base-level` flag to enforce a minimum required scope
+- CI-friendly `--exit-code` flag for pipeline integration
+- `--base-level` flag to enforce a minimum required scope (e.g. require managed-level enforcement)
 
-👉 **[Browse all checks →](https://gabrielsoltz.github.io/clauditor/)**
+<p align="center">
+  👉 <strong><a href="https://gabrielsoltz.github.io/clauditor/">Browse all checks →</a></strong>
+</p>
+
+---
+
+## Why This Matters — For Developers
+
+Claude Code has direct access to your shell, your files, and your network. That power is what makes it useful — and what makes its configuration worth protecting.
+
+**Someone else's settings run on your machine.**
+Claude Code project settings are committed to git and apply to everyone who works on the repository. Imagine you clone an open-source project to contribute a small fix. Unbeknownst to you, a maintainer (or an attacker who compromised a maintainer account) added a configuration that runs a custom script every time Claude Code starts a session. That script sends your API key to an external server. You never saw it happen. Clauditor checks for this class of risk before you start working.
+
+**A poisoned doc can hijack your session.**
+You ask Claude to summarize a README from a third-party library. That README contains hidden instructions — invisible to you, readable by Claude — telling it to exfiltrate the contents of your `~/.ssh` directory or run a reverse shell. Whether that attack succeeds depends entirely on what permissions Claude Code has. If your configuration allows unrestricted shell commands and unrestricted network access, the attack has everything it needs. If access is locked down, Claude simply can't comply. Clauditor tells you exactly how open your current permissions are.
+
+**You might be running a credential harvester without knowing it.**
+Some Claude Code settings let a repository define a helper script that runs to generate authentication tokens or refresh cloud credentials. If that setting is present in a project you cloned — pointing to a script inside the repo itself — you are executing untrusted code with access to your credentials on every session start. No prompt, no warning. Clauditor detects when these helpers are defined at the project level, where they should never be.
+
+Clauditor scans how your Claude Code is configured in your machine and in any repositories you work with (locally or remotely).
+
+---
+
+## Why This Matters — For Security Teams
+
+Claude Code is a new category of tool: an AI agent with persistent shell, filesystem, and network access that developers run continuously during their workday. It introduces attack surface that traditional security tooling doesn't cover.
+
+**Project settings are a supply chain vector.** `.claude/settings.json` is committed to git. Any contributor with repository write access can modify Claude Code's behavior for everyone on the project — adding hooks that exfiltrate data, granting unrestricted `Bash` permissions, or redirecting telemetry to an external collector. This is a lateral movement path that bypasses most existing controls.
+
+**Managed settings are your enforcement layer.** Claude Code supports a managed settings file deployed via MDM or configuration management. It takes the highest precedence and cannot be overridden by users or projects (if they don't have the necessary permissions). Without it, every developer's Claude Code instance runs with whatever settings they (or the project) have configured — which may be insecure defaults.
+
+**You need visibility.** Claude Code supports OpenTelemetry export of session metadata, tool calls, bash commands, and token usage. Without explicitly configuring a telemetry pipeline in managed settings, you have no audit trail of how Claude Code is being used across your fleet.
+
+**Compliance requires repeatability.** Clauditor produces machine-readable results and exits with a non-zero code on failures, making it suitable for CI pipelines, periodic audits, and compliance evidence collection.
 
 ---
 
@@ -64,14 +101,6 @@ brew install pipx && pipx ensurepath
 
 # Linux / WSL
 python3 -m pip install --user pipx && pipx ensurepath
-```
-
-**Alternative — pip inside a virtual environment:**
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install clauditor
 ```
 
 **From source:**
