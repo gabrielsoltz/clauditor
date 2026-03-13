@@ -41,3 +41,6 @@ dmypy.json
 
 # macOS
 .DS_Store
+
+# Generated site (built by scripts/generate_site.py, deployed via GitHub Pages)
+site/
