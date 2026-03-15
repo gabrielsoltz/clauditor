@@ -2,9 +2,7 @@ name: Security
 
 on:
   push:
-    branches: ["main"]
   pull_request:
-    branches: ["main"]
   schedule:
     # Run weekly on Monday at 08:00 UTC to catch newly disclosed vulnerabilities
     - cron: "0 8 * * 1"
@@ -19,14 +17,14 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.13"
 
-      - name: Install bandit
-        run: pip install bandit
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
 
       - name: Run bandit
         run: bandit -q -lll -r clauditor/
@@ -37,16 +35,48 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.13"
 
-      - name: Install pip-audit and dependencies
-        run: |
-          pip install pip-audit
-          pip install -e .
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
 
       - name: Audit dependencies
         run: pip-audit
+
+  zizmor:
+    name: zizmor (workflow security)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Run zizmor (SARIF upload)
+        run: zizmor --format=sarif . > zizmor.sarif
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload SARIF to GitHub Advanced Security
+        uses: github/codeql-action/upload-sarif@820e3160e279568db735cee8ed8f8e77a6da7818 # v3
+        with:
+          sarif_file: zizmor.sarif
+          category: zizmor
+
+      - name: Run zizmor (CI gate — fail on high severity)
+        run: zizmor --min-severity=high .
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

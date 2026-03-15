@@ -11,11 +11,16 @@ repos:
         args: ["--branch", "main"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: b969e2851312ca2b24bbec879ba4954341d1bd12  # frozen: v0.15.5
+    rev: 4924b0e01e032fea073ad04a1c5cfa7e4add0afb  # frozen: v0.15.6
     hooks:
       - id: ruff
         args: [--fix]
       - id: ruff-format
+
+  - repo: https://github.com/woodruffw/zizmor-pre-commit
+    rev: ea2eb407b4cbce87cf0d502f36578950494f5ac9  # frozen: v1.23.1
+    hooks:
+      - id: zizmor
 
   - repo: https://github.com/sirosen/check-jsonschema
     rev: 8db279a37c552206d2df62269ff6f9d31125815a  # frozen: 0.37.0

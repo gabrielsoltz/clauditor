@@ -21,11 +21,11 @@ classifiers = [
     "Topic :: Security",
 ]
 dependencies = [
-    "pydantic>=2.0",
-    "pyyaml>=6.0",
-    "typer>=0.12",
-    "rich>=13.0",
-    "gitpython>=3.1",
+    "pydantic==2.12.5",
+    "pyyaml==6.0.3",
+    "typer==0.24.1",
+    "rich==14.3.3",
+    "gitpython==3.1.46",
 ]
 
 [project.scripts]
@@ -41,6 +41,7 @@ dev = [
     "bandit>=1.7",
     "pip-audit>=2.7",
     "vulture>=2.11",
+    "zizmor>=1.23",
 ]
 
 [tool.pytest.ini_options]
