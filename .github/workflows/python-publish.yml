@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
-      contents: write  # required to upload signatures to the GitHub release
+      contents: read
       id-token: write  # required for OIDC PyPI publishing and Sigstore signing
 
     steps:
@@ -85,8 +85,7 @@ jobs:
         uses: sigstore/gh-action-sigstore-python@a5caf349bc536fbef3668a10ed7f5cd309a4b53d # v3.2.0
         with:
           inputs: ./dist/*.tar.gz ./dist/*.whl
-          # release-signing-artifacts defaults to true on release events —
-          # the action uploads .sigstore.json files to the GitHub release automatically
+          release-signing-artifacts: false
 
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
