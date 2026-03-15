@@ -1,4 +1,4 @@
 """Clauditor — Security configuration scanner for Claude Code."""
 
-__version__ = "0.4.1"
+__version__ = "0.5.0"
 __author__ = "Gabriel Alejandro Soltz"
