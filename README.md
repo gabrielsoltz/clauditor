@@ -255,44 +255,69 @@ With `--base-level project`, a setting that is only present in the user scope be
 Checks live in the `checks/` directory as YAML files. Example structure:
 
 ```yaml
-id: CC001
-name: CODEOWNERS Enforcement for Claude Code Paths
+id: CC002
+name: Disable Bypass Permissions Mode
 description: >
-  Ensures that /.claude/ and /CLAUDE.md have CODEOWNERS entries
-  requiring security team review.
+  Ensures that the disableBypassPermissionsMode setting is explicitly set to
+  "disable" across applicable Claude Code configuration scopes (user, project,
+  local, managed). This prevents users from launching Claude Code with the
+  --dangerously-skip-permissions flag, which bypasses all permission controls.
 
 scope:
-  - repository
+  - user
+  - project
+  - local
+  - managed
 
-severity: HIGH  # CRITICAL | HIGH | MEDIUM | LOW | INFO
+severity: CRITICAL
 
 threat: >
-  Without CODEOWNERS enforcement, contributors can silently modify
-  Claude Code settings, hooks, or instructions without security review...
+  When bypass permissions mode is not locked down, any user can run Claude Code
+  with --dangerously-skip-permissions, which disables all tool permission prompts
+  and approval gates. An attacker or careless developer can exploit this to allow
+  Claude to execute arbitrary shell commands, read/write any file, make network
+  requests, and perform other destructive actions without any human approval step.
+  In CI/CD pipelines or shared environments, this can lead to complete
+  compromise of the system, secret exfiltration, or supply chain attacks.
 
-category: access_control
+category: permissions
 
-check_type: file_content  # config_value | config_contains | config_set | file_content | file_exists
+check_type: config_value
 
 check_config:
-  search_paths:
-    - CODEOWNERS
-    - .github/CODEOWNERS
-  required_entries:
-    - pattern: "/.claude/"
-      owner: "@security-team"
-    - pattern: "/CLAUDE.md"
-      owner: "@security-team"
+  key: disableBypassPermissionsMode
+  expected_value: "disable"
 
 remediation: >
-  Add to CODEOWNERS:
-    /.claude/ @security-team
-    /CLAUDE.md @security-team
+  Set disableBypassPermissionsMode to "disable" in the appropriate
+  Claude Code settings file:
+
+  For user scope enforcement (~/.claude/settings.json):
+    {
+      "disableBypassPermissionsMode": "disable"
+    }
+
+  For project-level enforcement (.claude/settings.json):
+    {
+      "disableBypassPermissionsMode": "disable"
+    }
+
+  For local-only enforcement (.claude/settings.local.json):
+    {
+      "disableBypassPermissionsMode": "disable"
+    }
+
+  For enterprise-wide enforcement, deploy via managed settings:
+    {
+      "disableBypassPermissionsMode": "disable"
+    }
+
+  The managed scope takes the highest precedence and cannot be overridden
+  by users, making it the most effective enforcement point.
 
 fix_available: true
 
 references:
-  - https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
   - https://code.claude.com/docs/en/settings
 ```
 
@@ -300,10 +325,12 @@ references:
 
 | `check_type` | `check_config` keys | Description |
 |---|---|---|
-| `config_value` | `key`, `expected_value` | Verifies a key/value in a JSON settings file |
+| `config_value` | `key`, `expected_value` | Verifies a key equals a specific value in a JSON settings file |
 | `config_contains` | `key`, `required_values` | Verifies a list key contains all required values |
 | `config_set` | `key` | Verifies a key is present and non-empty (any truthy value) |
-| `file_content` | `search_paths`, `required_entries` | Verifies required lines exist in a file |
+| `config_absent` | `key` | Verifies a key is **not** present — used for settings that are dangerous when committed to shared scopes (e.g. credential helpers, telemetry endpoints) |
+| `config_not_contains` | `key`, `forbidden_values` | Verifies a list key does **not** contain any of the forbidden values (e.g. overly broad permission grants) |
+| `file_content` | `search_paths`, `required_entries` | Verifies required entries exist in a file; each entry needs a `pattern`, and an optional `owner` — if `owner` is omitted, any non-empty owner is accepted |
 | `file_exists` | `paths`, `any_of` | Verifies file(s) exist in the repository |
 
 ---
@@ -334,6 +361,7 @@ clauditor generate --scope managed -o managed-settings.json
 - `config_value` checks → sets the key to its required value
 - `config_contains` checks → builds/merges the required list entries (e.g. multiple checks writing to `permissions.deny` are merged automatically)
 - `config_set` checks → **skipped** (e.g. `forceLoginOrgUUID` requires your org-specific UUID; reported separately)
+- `config_absent` / `config_not_contains` checks → **skipped** (these flag things that should be removed, not added)
 - `file_content` / `file_exists` checks → **skipped** (repository governance files, not settings values)
 
 **Example output** (`clauditor generate --scope managed`):
@@ -396,11 +424,13 @@ clauditor/
 │   ├── config_provider.py   # User, Project, Local, Managed providers
 │   └── repository_provider.py  # Repository file provider + git clone
 ├── checkers/
-│   ├── config_value.py     # Logic for config_value checks
-│   ├── config_contains.py  # Logic for config_contains checks
-│   ├── config_set.py       # Logic for config_set checks
-│   ├── file_content.py     # Logic for file_content checks
-│   └── file_exists.py      # Logic for file_exists checks
+│   ├── config_value.py         # Logic for config_value checks
+│   ├── config_contains.py      # Logic for config_contains checks
+│   ├── config_set.py           # Logic for config_set checks
+│   ├── config_absent.py        # Logic for config_absent checks
+│   ├── config_not_contains.py  # Logic for config_not_contains checks
+│   ├── file_content.py         # Logic for file_content checks
+│   └── file_exists.py          # Logic for file_exists checks
 └── output/
     └── console.py       # Rich terminal output
 
