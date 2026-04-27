@@ -21,7 +21,7 @@ classifiers = [
     "Topic :: Security",
 ]
 dependencies = [
-    "pydantic==2.13.0",
+    "pydantic==2.13.3",
     "pyyaml==6.0.3",
     "typer==0.24.1",
     "rich==15.0.0",
