@@ -37,15 +37,9 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - uses: pypa/gh-action-pip-audit@1220774d901786e6f652ae159f7b6bc8fea6d266 # v1.1.0
         with:
-          python-version: "3.13"
-
-      - name: Install dependencies
-        run: pip install -e ".[dev]"
-
-      - name: Audit dependencies
-        run: pip-audit
+          inputs: .
 
   zizmor:
     name: zizmor (workflow security)
