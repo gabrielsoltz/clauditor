@@ -28,6 +28,12 @@ repos:
       - id: check-github-actions
       - id: check-github-workflows
 
+  - repo: https://github.com/pypa/pip-audit
+    rev: dec21659d132d424d7ee5e21cfd80021097a7251  # frozen: v2.10.0
+    hooks:
+      -   id: pip-audit
+          args: ["."]
+
   - repo: local
     hooks:
       - id: mypy
@@ -44,13 +50,6 @@ repos:
         entry: bandit -q -lll -r clauditor/
         language: system
         files: '.*\.py'
-        pass_filenames: false
-
-      - id: pip-audit
-        name: pip-audit
-        description: "Check dependencies for known security vulnerabilities"
-        entry: pip-audit
-        language: system
         pass_filenames: false
 
       - id: vulture
