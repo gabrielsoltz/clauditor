@@ -25,7 +25,7 @@ dependencies = [
     "pyyaml==6.0.3",
     "typer==0.25.1",
     "rich==15.0.0",
-    "gitpython==3.1.50",
+    "gitpython==3.1.53",
 ]
 
 [project.scripts]
